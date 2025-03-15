@@ -104,7 +104,6 @@ class PresetKeyboard(ctk.CTkFrame):
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure((0, 1), weight=1)
 
-        # Pulsanti di preset
         self.btn_1 = ctk.CTkButton(self, text="1L", font=("Arial", 50, "bold"), width=200, height=150, hover=None,
                                    command=lambda: self.send_preset(1))
         self.btn_1.grid(row=0, column=0, padx=20, pady=10)
@@ -123,7 +122,6 @@ class PresetKeyboard(ctk.CTkFrame):
         self.btn_4.grid(row=0, column=3, padx=20, pady=10)
 
     def send_preset(self, value):
-        """Invia il valore di predeterminazione alla pompa"""
         self.send_preset_callback(value)
 
     def cancel_preset(self):
