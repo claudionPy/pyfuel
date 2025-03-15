@@ -20,7 +20,6 @@ class GuiSideObject:
         self.create_liters_label()
 
     def side_button(self):
-        """Initialize the GUI elements for the side."""
         self.button = ctk.CTkButton(
             self.app,
             text=self.guiparams.buttonText or "",
@@ -38,7 +37,6 @@ class GuiSideObject:
 
     def create_preset_label(self):
         """Crea il label per visualizzare il preset corrente."""
-        # Imposta un offset verticale per posizionare il label al di sotto del pulsante # puoi regolare questo valore in base alle tue necessità
         self.preset_label = ctk.CTkLabel(
             self.app,
             text="Preset: ",
@@ -89,11 +87,9 @@ class GuiSideObject:
             self.liters_display.configure(text=f"{liters:.2f}")
 
     def update_preset_label(self, preset_value):
-        """Aggiorna il testo del label per mostrare il preset corrente."""
         self.preset_label.configure(text=f"Preset: {preset_value}L")
 
     def update_button(self, color: str, border_color: str):
-        """Update the button color and border color if they have changed."""
         current_fg = self.button.cget("fg_color")
         current_border = self.button.cget("border_color")
 
@@ -103,7 +99,6 @@ class GuiSideObject:
 
 class PresetKeyboard(ctk.CTkFrame):
     def __init__(self, parent, send_preset_callback):
-        """Tastiera di predeterminazione con 4 pulsanti (1, 5, 50, C)"""
         super().__init__(parent)
         self.send_preset_callback = send_preset_callback
         self.grid_columnconfigure((0, 1), weight=1)
@@ -132,7 +127,6 @@ class PresetKeyboard(ctk.CTkFrame):
         self.send_preset_callback(value)
 
     def cancel_preset(self):
-        """Cancella il valore di predeterminazione"""
         self.send_preset_callback(None)  # Invia None per annullare
 
 class MainWindow(ctk.CTk):
@@ -187,12 +181,10 @@ class MainWindow(ctk.CTk):
         self.controller.listen_rfid(card_value)
 
     def close_gui(self):
-        """Close the GUI and release resources."""
         logging.info("[INFO]: Closing gui window")
         self.destroy()
 
     async def run(self):
-        """Run the main loop asynchronously with reduced CPU usage."""
         logging.info(f"[INFO]: GUI event loop running: {asyncio.get_event_loop().is_running()}")
         while True:
             self.update_idletasks()
