@@ -3,7 +3,6 @@ from params import GuiParameters
 import asyncio
 import logging
 
-# Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class GuiSideObject:
@@ -13,13 +12,13 @@ class GuiSideObject:
         self.side_number = side_number
         self.on_click_callback = on_click_callback
         self.buttonFont = ctk.CTkFont(family="sans-serif", size=60, weight="bold")
-        # Riduco leggermente la dimensione del font per il label
         self.labelFont = ctk.CTkFont(family="sans-serif", size=35, weight="bold")
         self.side_button()
         self.create_preset_label()
         self.create_liters_label()
 
     def side_button(self):
+        """Crea un lato GUI in riferimento a lato 'Hardware'."""
         self.button = ctk.CTkButton(
             self.app,
             text=self.guiparams.buttonText or "",
@@ -51,6 +50,7 @@ class GuiSideObject:
         )
 
     def create_liters_display(self):
+        """Crea l'indicatore corrente per la quantità erogata."""
         self.liters_display = ctk.CTkLabel(
             self.app,
             text="0.00",
@@ -66,6 +66,7 @@ class GuiSideObject:
         )
 
     def create_liters_label(self):
+        """Crea la label indicante l'unità di misura usata per conteggiare: es. L."""
         self.liters_label = ctk.CTkLabel(
             self.app,
             text=self.guiparams.labelText or "",
@@ -79,6 +80,7 @@ class GuiSideObject:
             rely=self.guiparams.button_rely + offsety,
             anchor="center"
         )
+        """Chiama la funzione per creare l'indicatore di quantità erogata."""
         self.create_liters_display()
     
     def update_liters_display(self, liters):
@@ -87,9 +89,11 @@ class GuiSideObject:
             self.liters_display.configure(text=f"{liters:.2f}")
 
     def update_preset_label(self, preset_value):
+        """Aggiorna il testo del label per mostrare il preset corrente."""
         self.preset_label.configure(text=f"Preset: {preset_value}L")
 
     def update_button(self, color: str, border_color: str):
+        """Aggiorna colore pulsante e il rispettivo bordo se vi è un cambiamento dal precedente."""
         current_fg = self.button.cget("fg_color")
         current_border = self.button.cget("border_color")
 
@@ -99,6 +103,7 @@ class GuiSideObject:
 
 class PresetKeyboard(ctk.CTkFrame):
     def __init__(self, parent, send_preset_callback):
+        """Tastiera di predeterminazione con 4 pulsanti."""
         super().__init__(parent)
         self.send_preset_callback = send_preset_callback
         self.grid_columnconfigure((0, 1), weight=1)
@@ -122,10 +127,12 @@ class PresetKeyboard(ctk.CTkFrame):
         self.btn_4.grid(row=0, column=3, padx=20, pady=10)
 
     def send_preset(self, value):
+        """Invia il valore di predeterminazione alla logica."""
         self.send_preset_callback(value)
 
     def cancel_preset(self):
-        self.send_preset_callback(None)  # Invia None per annullare
+        """Cancella il valore di predeterminazione."""
+        self.send_preset_callback(None)
 
 class MainWindow(ctk.CTk):
     def __init__(self, controller):
@@ -148,6 +155,7 @@ class MainWindow(ctk.CTk):
         self.keyboard.place(relx=0.5, rely=0.83, anchor="center")
 
     def create_main_label(self):
+        """Crea la labl principale responsabile dei messaggi di stato principali."""
         self.label = ctk.CTkLabel(
             self,
             text=f"EROGATORE IN MANUALE",
@@ -160,6 +168,7 @@ class MainWindow(ctk.CTk):
         self.label.place(relx=0.5, rely=0.5, anchor="center")
 
     def update_main_label(self, text: str):
+        """Aggiorna la label principale con testo inviato dal controller."""
         current_text = self.label.cget("text")
 
         if current_text != text:
@@ -167,6 +176,7 @@ class MainWindow(ctk.CTk):
             logging.info(f"Main label updated: text={text}")
 
     def send_preset(self, value):
+        """Invia preset al controller."""
         if value is None:
             logging.info(f"[INFO]: Sent preset value: None")
         else:
@@ -174,15 +184,18 @@ class MainWindow(ctk.CTk):
         asyncio.create_task(self.controller.send_preset_to_pump(value))
 
     def handle_rfid_scan(self, event):
+        """Oggetto Entry che permette l'ascolto delle tessere."""
         card_value = self.rfid_entry.get().strip()
         self.rfid_entry.delete(0, 'end')
         self.controller.listen_rfid(card_value)
 
     def close_gui(self):
+        """Chiude la GUI."""
         logging.info("[INFO]: Closing gui window")
         self.destroy()
 
     async def run(self):
+        """Mantiene loop asincrono attivo e chiama metodo update ogni secondo per non bloccare la GUI."""
         logging.info(f"[INFO]: GUI event loop running: {asyncio.get_event_loop().is_running()}")
         while True:
             self.update_idletasks()
