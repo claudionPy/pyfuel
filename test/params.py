@@ -14,6 +14,7 @@ class FuelParameters:
     relayActivationDelay: int = 3
     nozzleSwitch_invert_polarity: bool = True
     max_time_without_fueling: int = 60
+    calibration_factor: float = 0.95
 
 @dataclass
 class GuiParameters:
@@ -57,17 +58,3 @@ class GuiSides:
     side_2: GuiParameters
     side_3: GuiParameters
     side_4: GuiParameters
-
-def load_config(config_file="config.json"):
-    """
-    Carica una configurazione esterna da un file JSON.
-    Se il file non esiste o ci sono errori, vengono usati i parametri di default.
-    """
-    config = {}
-    if os.path.exists(config_file):
-        try:
-            with open(config_file, "r") as f:
-                config = json.load(f)
-        except Exception as e:
-            print(f"Errore nel caricamento del file di configurazione: {e}")
-    return config
