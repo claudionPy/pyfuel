@@ -19,7 +19,7 @@ class PumpObject:
         except Exception as e:
             logging.error(f"[ERROR]: Eccezione durante l'inizializzazione di pigpio per il lato {self.side_number}: {e}")
             self.pi = None
-
+ 
         if self.pi and self.pi.connected:
             logging.info(f"[INFO]: pigpio operativo per il lato {self.side_number}.")
             try:
@@ -164,7 +164,8 @@ class PumpObject:
         try:
             while self.preset_value and self.pump_is_busy:
                 await asyncio.sleep(0.1)
-                if self.pulserCounter >= self.preset_value * self.params.pulsesPerLiter:
+                preset = self.preset_value * self.params.pulsesPerLiter * self.params.calibration_factor
+                if self.pulserCounter >= preset:
                     logging.info(f"[INFO]: Preset raggiunto, arresto erogazione per il lato {self.side_number}")
                     await self.cancel_task()
                     self.task = asyncio.create_task(self.stopErogation())
@@ -205,7 +206,8 @@ class PumpObject:
         """
         while True:
             liters = self.pulserCounter / self.params.pulsesPerLiter
-            await self.q.put(("update_liters", self.side_number, liters))
+            calibrated_liters = liters / self.params.calibration_factor
+            await self.q.put(("update_liters", self.side_number, calibrated_liters))
             await asyncio.sleep(1)
 
     async def startErogation(self):
@@ -265,4 +267,5 @@ class PumpObject:
             self.pi.write(self.params.relaySwitchPin, 0)
             self.pi.stop()
             logging.info(f"[INFO]: Risorse GPIO rilasciate per il lato {self.side_number}.")
+
 
