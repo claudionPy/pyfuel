@@ -200,4 +200,4 @@ class MainWindow(ctk.CTk):
         while True:
             self.update_idletasks()
             self.update()
-            await asyncio.sleep(1)  # Reduce CPU usage
+            await asyncio.sleep(1)

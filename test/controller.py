@@ -3,20 +3,12 @@ import logging
 import psutil
 from hardware import PumpObject
 from gui import MainWindow, GuiSideObject
-from params import GuiParameters, FuelParameters, GuiSides, FuelSides, MainParameters, load_config
+from params import GuiParameters, FuelParameters, GuiSides, FuelSides, MainParameters
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class Controller:
     def __init__(self):
-        """
-        Inizializza il Controller, configurando i lati hardware e GUI,
-        caricando la configurazione esterna e impostando lo stato interno.
-        """
-        # Carica la configurazione esterna (se presente)
-        config = load_config()
-        # Qui è possibile sovrascrivere i parametri di default con quelli caricati
-
         self.fuel_sides = FuelSides(
             side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, isAutomatic=True, relayActivationDelay=3),
             side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3),
@@ -263,4 +255,3 @@ if __name__ == "__main__":
         loop.run_until_complete(controller.cleanup())
         loop.close()
         logging.info("[INFO]: Loop chiuso con successo.")
-
