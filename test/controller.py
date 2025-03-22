@@ -263,4 +263,3 @@ if __name__ == "__main__":
         loop.run_until_complete(controller.cleanup())
         loop.close()
         logging.info("[INFO]: Loop chiuso con successo.")
-
