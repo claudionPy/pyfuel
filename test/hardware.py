@@ -122,11 +122,11 @@ class PumpObject:
             except asyncio.CancelledError:
                 logging.info(f"[INFO]: Task principale annullato per il lato {self.side_number}.")
 
-    async def cancel_preset(self):
+    async def cancel_preset_task(self):
         """
         Annulla il task del preset e resetta il valore di preset.
         """
-        self.preset_value = 0
+        #self.preset_value = 0
         if self.preset_task and not self.preset_task.done():
             self.preset_task.cancel()
             try:
@@ -135,7 +135,7 @@ class PumpObject:
                 logging.info(f"[INFO]: Task preset annullato per il lato {self.side_number}")
         logging.info(f"[INFO]: Preset resettato a 0 per il lato {self.side_number}")
 
-    async def cancel_sim_counter(self):
+    async def cancel_simulation_counter_task(self):
         """
         Annulla il task di simulazione del contatore se attivo.
         """
@@ -229,10 +229,12 @@ class PumpObject:
 
             if self.preset_value > 0:
                 if self.preset_task:
-                    self.preset_task.cancel()
+                    self.cancel_preset_task()
                 self.preset_task = asyncio.create_task(self.monitor_preset())
             self.update_liters_task = asyncio.create_task(self.monitorCounter())
-            self.sim_counter_task = asyncio.create_task(self.sim_counter())
+            if self.params.simulation_pulser:
+                self.sim_counter_task = asyncio.create_task(self.sim_counter())
+                logging.info(f"[INFO]: Simulazione GPIO avviata, parametro: True - LATO {self.side_number}")
             await self.checkMaxTiming()
         except Exception as e:
             logging.error(f"[ERROR]: Eccezione in startErogation per il lato {self.side_number}: {e}")
@@ -246,8 +248,9 @@ class PumpObject:
         logging.info(f"[INFO]: ERROGAZIONE ARRESTATA - LATO {self.side_number}")
         if self.pi:
             self.pi.write(self.params.relaySwitchPin, 0)
-        await self.cancel_preset()
-        await self.cancel_sim_counter()
+        self.preset_value = 0
+        await self.cancel_preset_task()
+        await self.cancel_simulation_counter_task()
         await asyncio.sleep(1)
         await self.cancel_update_liters_task()
 
