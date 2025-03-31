@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-import os
-import json
+
 
 @dataclass
 class FuelParameters:
@@ -15,6 +14,7 @@ class FuelParameters:
     nozzleSwitch_invert_polarity: bool = True
     max_time_without_fueling: int = 60
     calibration_factor: float = 0.95
+    simulation_pulser: bool = False
 
 @dataclass
 class GuiParameters:
