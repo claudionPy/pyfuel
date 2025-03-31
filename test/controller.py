@@ -10,8 +10,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 class Controller:
     def __init__(self):
         self.fuel_sides = FuelSides(
-            side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, isAutomatic=True, relayActivationDelay=3),
-            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3),
+            side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
+            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=False),
             side_3=FuelParameters(),
             side_4=FuelParameters()
         )
@@ -168,7 +168,7 @@ class Controller:
             if pump_obj.params.sideExists and not pump_obj.nozzle_status:
                 if value is None:
                     logging.info("[INFO]: Annullamento preset.")
-                    await pump_obj.cancel_preset()
+                    await pump_obj.cancel_preset_task()
                 else:
                     logging.info(f"[INFO]: Impostazione preset: {value}L")
                     pump_obj.set_preset(value)
@@ -180,7 +180,8 @@ class Controller:
         """
         for side, (gui_obj, pump_obj) in self.sides.items():
             if pump_obj.params.sideExists and side != f"side_{active_side}" and not pump_obj.nozzle_status:
-                await pump_obj.cancel_preset()
+                pump_obj.preset_value = 0
+                await pump_obj.cancel_preset_task()
                 logging.info("[INFO]: Preset resettato su lato inattivo.")
                 gui_obj.update_preset_label(pump_obj.preset_value)
 
