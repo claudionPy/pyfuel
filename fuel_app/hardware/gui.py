@@ -134,6 +134,57 @@ class PresetKeyboard(ctk.CTkFrame):
         """Cancella il valore di predeterminazione."""
         self.send_preset_callback(None)
 
+class KeypadWindow(ctk.CTkToplevel):
+    def __init__(self, parent, title: str, prompt: str, callback):
+        super().__init__(parent)
+        self.title(title)
+        self.callback = callback
+        self.value = ""
+        
+        # Label per il prompt
+        self.prompt_label = ctk.CTkLabel(self, text=prompt, font=("Arial", 20))
+        self.prompt_label.grid(row=0, column=0, columnspan=3, pady=(10, 5))
+        
+        # Label per mostrare il valore corrente (non editabile)
+        self.display = ctk.CTkLabel(self, text=self.value, font=("Arial", 20), width=200)
+        self.display.grid(row=1, column=0, columnspan=3, pady=(5, 10))
+        
+        # Definiamo i pulsanti: 1-9, "Del", "0", "OK"
+        buttons = [
+            ("1", 2, 0), ("2", 2, 1), ("3", 2, 2),
+            ("4", 3, 0), ("5", 3, 1), ("6", 3, 2),
+            ("7", 4, 0), ("8", 4, 1), ("9", 4, 2),
+            ("Del", 5, 0), ("0", 5, 1), ("OK", 5, 2)
+        ]
+        for (text, row, col) in buttons:
+            # Importante: usiamo lambda t=text per catturare correttamente il valore di text
+            btn = ctk.CTkButton(self, text=text, font=("Arial", 20),
+                                command=lambda t=text: self.on_button_click(t))
+            btn.grid(row=row, column=col, padx=5, pady=5, sticky="nsew")
+        
+        # Configura il grid per espandersi
+        for i in range(2, 6):
+            self.grid_rowconfigure(i, weight=1)
+        for j in range(3):
+            self.grid_columnconfigure(j, weight=1)
+    
+    def on_button_click(self, t):
+        if t == "Del":
+            # Rimuove l'ultimo carattere
+            self.value = self.value[:-1]
+        elif t == "OK":
+            # Invia il valore tramite la callback e chiude la finestra
+            self.callback(self.value)
+            self.destroy()
+            return
+        else:
+            # Aggiunge la cifra al valore corrente
+            self.value += t
+        
+        # Aggiorna la label di visualizzazione
+        self.display.configure(text=self.value)
+
+
 class MainWindow(ctk.CTk):
     def __init__(self, controller):
         super().__init__()
