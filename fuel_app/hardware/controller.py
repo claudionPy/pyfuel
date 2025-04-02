@@ -11,7 +11,7 @@ class Controller:
     def __init__(self):
         self.fuel_sides = FuelSides(
             side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
-            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=False),
+            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
             side_3=FuelParameters(),
             side_4=FuelParameters()
         )
