@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from params import GuiParameters
+from hardware.params import GuiParameters
 import asyncio
 import logging
 
