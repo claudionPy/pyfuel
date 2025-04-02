@@ -2,7 +2,7 @@ import asyncio
 import logging
 import psutil
 from hardware.hardware import PumpObject
-from hardware.gui import MainWindow, GuiSideObject
+from hardware.gui import MainWindow, GuiSideObject, KeypadWindow
 from hardware.params import GuiParameters, FuelParameters, GuiSides, FuelSides, MainParameters
 from app.database import async_session
 from app.crud import drivers as autisti_crud
@@ -13,7 +13,7 @@ class Controller:
     def __init__(self):
         self.fuel_sides = FuelSides(
             side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
-            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
+            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
             side_3=FuelParameters(),
             side_4=FuelParameters()
         )
@@ -30,6 +30,7 @@ class Controller:
         self.sides = {}
         self.view = MainWindow(self)
 
+        # Non usiamo più una lista statica di tessere
         self.card_validated = False
         self.side_selected = None
         self.selection_timer_task = None
@@ -55,20 +56,13 @@ class Controller:
 
                 gui_obj.button.configure(state="disabled")
 
-
     async def cancel_all_tasks(self):
-        """
-        Annulla tutti i task asyncio attivi.
-        """
         tasks = [task for task in asyncio.all_tasks() if task is not asyncio.current_task()]
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
 
     async def monitor_resources(self):
-        """
-        Monitora periodicamente le risorse di sistema e logga l'utilizzo della memoria e il numero di task.
-        """
         while True:
             memory_usage = psutil.Process().memory_info().rss / 1024 / 1024
             task_count = len(asyncio.all_tasks())
@@ -77,7 +71,7 @@ class Controller:
 
     def listen_rfid(self, card_id):
         """
-        Gestisce l'input RFID: se la tessera è valida, procede con la validazione.
+        Gestisce l'input RFID: avvia un task asincrono per validare la tessera nel database.
         """
         if not any(side.isAutomatic for side in vars(self.fuel_sides).values()):
             logging.info("[INFO]: Tutti i lati in modalità manuale; validazione RFID disattivata.")
@@ -88,7 +82,8 @@ class Controller:
             self.view.update_main_label("TUTTI I LATI SELEZIONATI, ATTENDI")
             self.view.after(3000, self.view.update_main_label, self.params.aut_MainLabel)
             return
-        
+
+        # Avvia il task per validare la tessera dal DB
         asyncio.create_task(self.valida_tessera(card_id))
 
     async def valida_tessera(self, card_id: str):
@@ -96,33 +91,98 @@ class Controller:
             autista = await autisti_crud.get_autista(session, card_id)
             if autista:
                 logging.info(f"[INFO]: Tessera valida trovata nel DB: {card_id}")
-                self.handle_rfid_validation(card_id)
+                # Controlla se è richiesto il PIN
+                if autista.richiedi_pin:
+                    await self.prompt_for_pin(autista)
+                # Se non richiede PIN ma richiede ID veicolo, passa alla fase del veicolo
+                elif autista.richiedi_id_veicolo:
+                    await self.prompt_for_vehicle(autista)
+                else:
+                    self.handle_rfid_validation(autista.tessera)
             else:
                 logging.info(f"[INFO]: Tessera non trovata nel DB: {card_id}")
                 self.view.update_main_label(self.params.ref_MainLabel)
                 self.view.after(3000, self.view.update_main_label, self.params.aut_MainLabel)
 
+    async def prompt_for_pin(self, autista):
+        """Mostra un tastierino per inserire il PIN e attende il risultato."""
+        future = asyncio.get_event_loop().create_future()
+        def pin_callback(value):
+            future.set_result(value)
+        # Mostra il tastierino per il PIN
+        self.view.after(0, lambda: KeypadWindow(self.view, "Inserisci PIN", "Inserisci il PIN:", pin_callback))
+        pin_input = await future
+        if pin_input == autista.pin:
+            logging.info("[INFO]: PIN corretto.")
+            # Se richiede anche l'ID veicolo, passa a quella fase
+            if autista.richiedi_id_veicolo:
+                await self.prompt_for_vehicle(autista)
+            else:
+                self.handle_rfid_validation(autista.tessera)
+        else:
+            logging.info("[INFO]: PIN errato.")
+            self.view.update_main_label("PIN ERRATO")
+            await asyncio.sleep(3)
+            self.view.update_main_label(self.params.aut_MainLabel)
+
+    async def prompt_for_vehicle(self, autista):
+        """Mostra un tastierino per inserire l'ID del veicolo e, se richiesto, i KM."""
+        future = asyncio.get_event_loop().create_future()
+        def vehicle_callback(value):
+            future.set_result(value)
+        self.view.after(0, lambda: KeypadWindow(self.view, "Inserisci ID Veicolo", "Inserisci l'ID del veicolo:", vehicle_callback))
+        vehicle_id_str = await future
+        try:
+            vehicle_id = int(vehicle_id_str)
+        except ValueError:
+            self.view.update_main_label("ID VEICOLO NON VALIDO")
+            return
+
+        # Verifica l'esistenza del veicolo tramite il modulo CRUD (import dinamico per evitare circolarità)
+        from app.crud.veichles import get_veicolo_by_id
+        async with async_session() as session:
+            veicolo = await get_veicolo_by_id(session, vehicle_id)
+            if not veicolo:
+                self.view.update_main_label("VEICOLO NON TROVATO")
+                await asyncio.sleep(3)
+                self.view.update_main_label(self.params.aut_MainLabel)
+                return
+            # Se il veicolo richiede l'inserimento dei KM
+            if getattr(veicolo, "richiedi_km_veicolo", False):
+                future_km = asyncio.get_event_loop().create_future()
+                def km_callback(value):
+                    future_km.set_result(value)
+                self.view.after(0, lambda: KeypadWindow(self.view, "Inserisci KM", "Inserisci i KM attuali:", km_callback))
+                km_str = await future_km
+                try:
+                    km_value = float(km_str)
+                except ValueError:
+                    self.view.update_main_label("KM NON VALIDI")
+                    await asyncio.sleep(3)
+                    self.view.update_main_label(self.params.aut_MainLabel)
+                    return
+                if km_value <= veicolo.km_totali_veicolo:
+                    self.view.update_main_label("KM INSERITI TROPPO BASSI")
+                    await asyncio.sleep(3)
+                    self.view.update_main_label(self.params.aut_MainLabel)
+                    return
+            # Se tutto è valido, prosegui
+            self.handle_rfid_validation(autista.tessera)
 
     def handle_rfid_validation(self, card_id):
-        """
-        Gestisce la logica a seguito della validazione della tessera RFID.
-        """
         if self.card_validated:
             logging.info("[INFO]: Tessera già validata; seleziona un lato.")
             return
         
         self.card_validated = True
         self.view.update_main_label(self.params.sel_MainLabel)
-        for key, (gui_obj, pump_obj) in self.sides.items():
+        for side, (gui_obj, pump_obj) in self.sides.items():
             if pump_obj.params.isAutomatic and not pump_obj.authorized and not pump_obj.nozzle_status:
                 gui_obj.update_button(gui_obj.guiparams.available_buttonColor, gui_obj.guiparams.available_buttonBorderColor)
                 gui_obj.button.configure(state="normal")
         self.selection_timer_task = asyncio.create_task(self.selection_timeout())
 
     def reset_card_validation(self):
-        """
-        Resetta la validazione della tessera, aggiornando la GUI e ripristinando lo stato delle pompe.
-        """
         self.card_validated = False
         self.side_selected = None
         self.view.update_main_label(self.params.exp_MainLabel)
@@ -136,17 +196,11 @@ class Controller:
             self.selection_timer_task.cancel()
 
     async def selection_timeout(self):
-        """
-        Timeout per la selezione del lato: se non viene scelto alcun lato, viene resettata la validazione.
-        """
         await asyncio.sleep(self.params.max_selection_time)
         logging.info("[INFO]: Timeout selezione lato; reset della validazione.")
         self.reset_card_validation()
 
     def side_clicked(self, side_number):
-        """
-        Gestisce l'evento di selezione lato in seguito al click sul pulsante.
-        """
         if not self.card_validated:
             logging.warning("[WARNING]: Lato cliccato senza previa validazione della tessera.")
             return
@@ -167,9 +221,6 @@ class Controller:
         self.view.rfid_entry.focus_set()
 
     async def send_preset_to_pump(self, value):
-        """
-        Invia il valore di preset alla pompa corrispondente e aggiorna la GUI.
-        """
         for _, (gui_obj, pump_obj) in self.sides.items():
             if pump_obj.params.sideExists and not pump_obj.nozzle_status:
                 if value is None:
@@ -181,9 +232,6 @@ class Controller:
                 gui_obj.update_preset_label(pump_obj.preset_value)
 
     async def reset_preset_on_inactive_sides(self, active_side):
-        """
-        Resetta il preset su tutti i lati tranne quello attivo.
-        """
         for side, (gui_obj, pump_obj) in self.sides.items():
             if pump_obj.params.sideExists and side != f"side_{active_side}" and not pump_obj.nozzle_status:
                 pump_obj.preset_value = 0
@@ -192,9 +240,6 @@ class Controller:
                 gui_obj.update_preset_label(pump_obj.preset_value)
 
     async def process_updates(self):
-        """
-        Elabora gli aggiornamenti provenienti dagli eventi hardware e aggiorna la GUI di conseguenza.
-        """
         updates = []
         while True:
             update = await self.q.get()
@@ -225,10 +270,6 @@ class Controller:
             updates.clear()
 
     async def run(self):
-        """
-        Avvia il loop principale dell'applicazione, raggruppando il loop della GUI,
-        il processo degli aggiornamenti e il monitoraggio delle risorse.
-        """
         logging.info(f"[INFO]: Loop principale avviato: {asyncio.get_event_loop().is_running()}")
         try:
             await asyncio.gather(
@@ -242,9 +283,6 @@ class Controller:
             await self.cleanup()
 
     async def cleanup(self):
-        """
-        Pulisce le risorse e annulla tutti i task prima dell'uscita.
-        """
         logging.info("[INFO]: Pulizia delle risorse in corso.")
         for _, pump in self.sides.values():
             pump.close()
