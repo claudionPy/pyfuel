@@ -1,16 +1,18 @@
 import asyncio
 import logging
 import psutil
-from hardware import PumpObject
-from gui import MainWindow, GuiSideObject
-from params import GuiParameters, FuelParameters, GuiSides, FuelSides, MainParameters
+from hardware.hardware import PumpObject
+from hardware.gui import MainWindow, GuiSideObject
+from hardware.params import GuiParameters, FuelParameters, GuiSides, FuelSides, MainParameters
+from app.database import async_session
+from app.crud import drivers as autisti_crud
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class Controller:
     def __init__(self):
         self.fuel_sides = FuelSides(
-            side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
+            side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
             side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
             side_3=FuelParameters(),
             side_4=FuelParameters()
@@ -28,7 +30,6 @@ class Controller:
         self.sides = {}
         self.view = MainWindow(self)
 
-        self.valid_cards = ["3063367470", "13"]
         self.card_validated = False
         self.side_selected = None
         self.selection_timer_task = None
@@ -87,15 +88,20 @@ class Controller:
             self.view.update_main_label("TUTTI I LATI SELEZIONATI, ATTENDI")
             self.view.after(3000, self.view.update_main_label, self.params.aut_MainLabel)
             return
+        
+        asyncio.create_task(self.valida_tessera(card_id))
 
-        if card_id in self.valid_cards:
-            logging.info(f"[INFO]: Tessera valida letta: {card_id}")
-            self.handle_rfid_validation(card_id)
-        else:
-            if not self.card_validated:
-                logging.info(f"[INFO]: Tessera non riconosciuta: {card_id}")
+    async def valida_tessera(self, card_id: str):
+        async with async_session() as session:
+            autista = await autisti_crud.get_autista(session, card_id)
+            if autista:
+                logging.info(f"[INFO]: Tessera valida trovata nel DB: {card_id}")
+                self.handle_rfid_validation(card_id)
+            else:
+                logging.info(f"[INFO]: Tessera non trovata nel DB: {card_id}")
                 self.view.update_main_label(self.params.ref_MainLabel)
                 self.view.after(3000, self.view.update_main_label, self.params.aut_MainLabel)
+
 
     def handle_rfid_validation(self, card_id):
         """
