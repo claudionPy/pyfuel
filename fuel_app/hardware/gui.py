@@ -138,52 +138,68 @@ class KeypadWindow(ctk.CTkToplevel):
     def __init__(self, parent, title: str, prompt: str, callback):
         super().__init__(parent)
         self.title(title)
+        self.geometry(f"{parent.winfo_width()}x{parent.winfo_height()}+{parent.winfo_x()}+{parent.winfo_y()}")
         self.callback = callback
         self.value = ""
         
-        # Label per il prompt
-        self.prompt_label = ctk.CTkLabel(self, text=prompt, font=("Arial", 20))
-        self.prompt_label.grid(row=0, column=0, columnspan=3, pady=(10, 5))
+        # Definisci font e dimensioni maggiori per un'interfaccia più accessibile.
+        self.prompt_font = ctk.CTkFont(family="Arial", size=30, weight="bold")
+        self.display_font = ctk.CTkFont(family="Arial", size=40, weight="bold")
+        self.button_font = ctk.CTkFont(family="Arial", size=60, weight="bold")
         
-        # Label per mostrare il valore corrente (non editabile)
-        self.display = ctk.CTkLabel(self, text=self.value, font=("Arial", 20), width=200)
-        self.display.grid(row=1, column=0, columnspan=3, pady=(5, 10))
+        # Usa un frame che occupa l'intera finestra con padding per creare un overlay
+        self.container = ctk.CTkFrame(self)
+        self.container.pack(expand=True, fill="both", padx=190, pady=5)
+        self.container.grid_propagate(False)
+
         
-        # Definiamo i pulsanti: 1-9, "Del", "0", "OK"
+        # Label del prompt
+        self.prompt_label = ctk.CTkLabel(self.container, text=prompt, font=self.prompt_font)
+        self.prompt_label.grid(row=0, column=0, columnspan=3, pady=(20, 10))
+        
+        # Label per mostrare il valore corrente
+        self.display = ctk.CTkLabel(self.container, text=self.value, font=self.display_font, width=300)
+        self.display.grid(row=1, column=0, columnspan=3)
+        
+        # Definisci i pulsanti in una griglia (i pulsanti saranno più grandi)
         buttons = [
-            ("1", 2, 0), ("2", 2, 1), ("3", 2, 2),
-            ("4", 3, 0), ("5", 3, 1), ("6", 3, 2),
-            ("7", 4, 0), ("8", 4, 1), ("9", 4, 2),
-            ("Del", 5, 0), ("0", 5, 1), ("OK", 5, 2)
+            ("1", 2, 0, "blue"), ("2", 2, 1, "blue"), ("3", 2, 2, "blue"),
+            ("4", 3, 0, "blue"), ("5", 3, 1, "blue"), ("6", 3, 2, "blue"),
+            ("7", 4, 0, "blue"), ("8", 4, 1, "blue"), ("9", 4, 2, "blue"),
+            ("Del", 5, 0, "red"), ("0", 5, 1, "blue"), ("OK", 5, 2, "green")
         ]
-        for (text, row, col) in buttons:
-            # Importante: usiamo lambda t=text per catturare correttamente il valore di text
-            btn = ctk.CTkButton(self, text=text, font=("Arial", 20),
-                                command=lambda t=text: self.on_button_click(t))
-            btn.grid(row=row, column=col, padx=5, pady=5, sticky="nsew")
+
+        for (text, row, col, color) in buttons:
+            btn = ctk.CTkButton(
+                self.container,
+                text=text,
+                font=self.button_font,
+                command=lambda t=text: self.on_button_click(t),
+                width=200,      # Dimensioni maggiori per facilitare il click
+                height=200,
+                fg_color=color,
+                hover=None
+            )
+            btn.grid(row=row, column=col, pady=5)
         
-        # Configura il grid per espandersi
+        # Configura le righe e colonne della griglia in modo che si espandano
         for i in range(2, 6):
-            self.grid_rowconfigure(i, weight=1)
+            self.container.grid_rowconfigure(i, weight=1)
         for j in range(3):
-            self.grid_columnconfigure(j, weight=1)
+            self.container.grid_columnconfigure(j, weight=1)
     
     def on_button_click(self, t):
         if t == "Del":
-            # Rimuove l'ultimo carattere
             self.value = self.value[:-1]
         elif t == "OK":
-            # Invia il valore tramite la callback e chiude la finestra
             self.callback(self.value)
             self.destroy()
             return
         else:
-            # Aggiunge la cifra al valore corrente
             self.value += t
         
-        # Aggiorna la label di visualizzazione
+        # Aggiorna il display per mostrare il valore corrente
         self.display.configure(text=self.value)
-
 
 class MainWindow(ctk.CTk):
     def __init__(self, controller):
@@ -251,4 +267,4 @@ class MainWindow(ctk.CTk):
         while True:
             self.update_idletasks()
             self.update()
-            await asyncio.sleep(1)
+            await asyncio.sleep(.5)

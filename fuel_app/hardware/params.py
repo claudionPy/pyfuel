@@ -13,7 +13,7 @@ class FuelParameters:
     relayActivationDelay: int = 3
     nozzleSwitch_invert_polarity: bool = True
     max_time_without_fueling: int = 60
-    calibration_factor: float = 0.95
+    calibration_factor: float = 0.94
     simulation_pulser: bool = False
 
 @dataclass

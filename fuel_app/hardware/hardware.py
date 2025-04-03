@@ -270,5 +270,3 @@ class PumpObject:
             self.pi.write(self.params.relaySwitchPin, 0)
             self.pi.stop()
             logging.info(f"[INFO]: Risorse GPIO rilasciate per il lato {self.side_number}.")
-
-
