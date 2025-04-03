@@ -13,7 +13,7 @@ class Controller:
     def __init__(self):
         self.fuel_sides = FuelSides(
             side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
-            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
+            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
             side_3=FuelParameters(),
             side_4=FuelParameters()
         )
@@ -107,11 +107,23 @@ class Controller:
     async def prompt_for_pin(self, autista):
         """Mostra un tastierino per inserire il PIN e attende il risultato."""
         future = asyncio.get_event_loop().create_future()
+
         def pin_callback(value):
             future.set_result(value)
         # Mostra il tastierino per il PIN
-        self.view.after(0, lambda: KeypadWindow(self.view, "Inserisci PIN", "Inserisci il PIN:", pin_callback))
-        pin_input = await future
+        keypad_window = KeypadWindow(self.view, "Inserisci PIN", "Inserisci il PIN:", pin_callback)
+    
+        try:
+            # Attende al massimo 30 secondi l'input dell'utente
+            pin_input = await asyncio.wait_for(future, timeout=20)
+
+        except asyncio.TimeoutError:
+            keypad_window.destroy()
+            self.view.update_main_label("TEMPO SCADUTO")
+            await asyncio.sleep(3)
+            self.view.update_main_label(self.params.aut_MainLabel)
+            return
+        
         if pin_input == autista.pin:
             logging.info("[INFO]: PIN corretto.")
             # Se richiede anche l'ID veicolo, passa a quella fase
@@ -128,20 +140,35 @@ class Controller:
     async def prompt_for_vehicle(self, autista):
         """Mostra un tastierino per inserire l'ID del veicolo e, se richiesto, i KM."""
         future = asyncio.get_event_loop().create_future()
+
         def vehicle_callback(value):
             future.set_result(value)
-        self.view.after(0, lambda: KeypadWindow(self.view, "Inserisci ID Veicolo", "Inserisci l'ID del veicolo:", vehicle_callback))
-        vehicle_id_str = await future
+            
+        keypad_window = KeypadWindow(self.view, "Inserisci ID Veicolo", "Inserisci l'ID del veicolo:", vehicle_callback)
+
         try:
-            vehicle_id = int(vehicle_id_str)
-        except ValueError:
-            self.view.update_main_label("ID VEICOLO NON VALIDO")
+            vehicle_id_str = await asyncio.wait_for(future, timeout=20)
+            try:
+                vehicle_id = int(vehicle_id_str)
+
+            except ValueError:
+                self.view.update_main_label("ID VEICOLO NON VALIDO")
+                return
+            
+        except asyncio.TimeoutError:
+            keypad_window.destroy()
+            self.view.update_main_label("TEMPO SCADUTO")
+            await asyncio.sleep(3)
+            self.view.update_main_label(self.params.aut_MainLabel)
             return
+
+
 
         # Verifica l'esistenza del veicolo tramite il modulo CRUD (import dinamico per evitare circolarità)
         from app.crud.veichles import get_veicolo_by_id
         async with async_session() as session:
             veicolo = await get_veicolo_by_id(session, vehicle_id)
+
             if not veicolo:
                 self.view.update_main_label("VEICOLO NON TROVATO")
                 await asyncio.sleep(3)
@@ -150,19 +177,32 @@ class Controller:
             # Se il veicolo richiede l'inserimento dei KM
             if getattr(veicolo, "richiedi_km_veicolo", False):
                 future_km = asyncio.get_event_loop().create_future()
+
                 def km_callback(value):
                     future_km.set_result(value)
-                self.view.after(0, lambda: KeypadWindow(self.view, "Inserisci KM", "Inserisci i KM attuali:", km_callback))
-                km_str = await future_km
+
+                keypad_window = KeypadWindow(self.view, "Inserisci KM", "Inserisci i KM attuali:", km_callback)
+
                 try:
-                    km_value = float(km_str)
-                except ValueError:
-                    self.view.update_main_label("KM NON VALIDI")
-                    await asyncio.sleep(3)
-                    self.view.update_main_label(self.params.aut_MainLabel)
-                    return
-                if km_value <= veicolo.km_totali_veicolo:
-                    self.view.update_main_label("KM INSERITI TROPPO BASSI")
+                    km_str = await asyncio.wait_for(future_km, timeout=20)
+
+                    try:
+                        km_value = float(km_str)
+                    except ValueError:
+                        self.view.update_main_label("KM NON VALIDI")
+                        await asyncio.sleep(3)
+                        self.view.update_main_label(self.params.aut_MainLabel)
+                        return
+                    
+                    if km_value <= veicolo.km_totali_veicolo:
+                        self.view.update_main_label("KM INSERITI TROPPO BASSI")
+                        await asyncio.sleep(3)
+                        self.view.update_main_label(self.params.aut_MainLabel)
+                        return
+                    
+                except asyncio.TimeoutError:
+                    keypad_window.destroy()
+                    self.view.update_main_label("TEMPO SCADUTO")
                     await asyncio.sleep(3)
                     self.view.update_main_label(self.params.aut_MainLabel)
                     return
@@ -225,6 +265,7 @@ class Controller:
             if pump_obj.params.sideExists and not pump_obj.nozzle_status:
                 if value is None:
                     logging.info("[INFO]: Annullamento preset.")
+                    pump_obj.preset_value = 0
                     await pump_obj.cancel_preset_task()
                 else:
                     logging.info(f"[INFO]: Impostazione preset: {value}L")
