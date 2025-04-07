@@ -39,6 +39,7 @@ class PumpObject:
         self.update_liters_task = None
         self.preset_value = 0
         self.authorized = False
+        self.erogation_strted = False
 
         self.check_nozzleSwitch_polarity()
 
@@ -227,6 +228,8 @@ class PumpObject:
             else:
                 logging.info(f"[INFO]: Attivazione relè simulata per il lato {self.side_number}")
 
+            self.erogation_strted = True
+
             if self.preset_value > 0:
                 if self.preset_task:
                     self.cancel_preset_task()
@@ -253,8 +256,10 @@ class PumpObject:
         await self.cancel_simulation_counter_task()
         await asyncio.sleep(1)
         await self.cancel_update_liters_task()
-        await self.q.put(("complete_erogation", self.side_number))
-
+        if self.erogation_strted == True:
+            await self.q.put(("complete_erogation", self.side_number))
+        self.erogation_strted = False
+        
     async def checkMaxTiming(self):
         """
         Arresta l'erogazione se non vengono rilevati impulsi entro il tempo massimo consentito.

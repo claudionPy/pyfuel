@@ -28,8 +28,6 @@ class Controller:
             side_4=GuiParameters()
         )
 
-        raise "DA FARE: AGGIUNGERE SOMMA KM AD INSERIMENTO NUOVI KM TOTALI, AGGIUNGERE FUNZIONE PER NON REGISTRARE EROGAZIONI SE L'EROGAZIONE NON PARTE"
-
         self.params = MainParameters()
         self.q = asyncio.Queue(maxsize=100)
         self.sides = {}
@@ -209,6 +207,10 @@ class Controller:
                         await asyncio.sleep(3)
                         self.view.update_main_label(self.params.aut_MainLabel)
                         return
+                    
+                    veicolo.km_totali_veicolo = km_value
+                    await session.commit()
+                    logging.info(f"[INFO]: Veicolo aggiornato con nuovi KM: {km_value}")
                     
                 except asyncio.TimeoutError:
                     keypad_window.destroy()
