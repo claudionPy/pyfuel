@@ -9,6 +9,7 @@ class ErogazioneBase(BaseModel):
     id_veicolo: Optional[int] = None
     nome_compagnia_veicolo: Optional[str] = None
     km_totali_veicolo: Optional[float] = None
+    lato_erogazione: int
     litri_erogati: float
     prodotto_erogato: str
     timestamp_erogazione: datetime

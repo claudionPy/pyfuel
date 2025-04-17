@@ -272,6 +272,7 @@ class Controller:
             id_veicolo = id_veicolo,
             nome_compagnia_veicolo = nome_compagnia_veicolo,
             km_totali_veicolo = km_totali_veicolo,
+            lato_erogazione = side_number,
             litri_erogati = f"{litri_erogati:.2f}",
             prodotto_erogato = pump_obj.params.product,
             timestamp_erogazione = datetime.now(timezone.utc),
@@ -389,9 +390,8 @@ class Controller:
                         side_number = args[0]
                         await self.register_erogation_record_from_validated(side_number)
                 elif action == "reset_preset":
-                    if f"side_{args[0]}" in self.sides:
-                        active_side = args[0]
-                        await self.reset_preset_on_inactive_sides(active_side)
+                    active_side = args[0]
+                    await self.reset_preset_on_inactive_sides(active_side)
                 elif action == "update_liters":
                     if f"side_{args[0]}" in self.sides:
                         gui_obj, _ = self.sides[f"side_{args[0]}"]

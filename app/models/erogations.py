@@ -11,6 +11,7 @@ class Erogazione(Base):
     id_veicolo = Column(Integer, ForeignKey("veicoli.id_veicolo"), nullable=True)
     nome_compagnia_veicolo = Column(String, nullable=True)
     km_totali_veicolo = Column(Float, nullable=True)
+    lato_erogazione = Column(Integer, nullable=False)
     litri_erogati = Column(Float, nullable=True)
     prodotto_erogato = Column(String, nullable=True)
     timestamp_erogazione = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
