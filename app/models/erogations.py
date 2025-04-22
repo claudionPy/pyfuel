@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 class Erogazione(Base):
     __tablename__ = "erogazioni"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    tessera = Column(String, ForeignKey("autisti.tessera"), nullable=True)
+    tessera = Column(String, nullable=True)
     nome_compagnia = Column(String, nullable=True)
     nome_autista = Column(String, nullable=True)
-    id_veicolo = Column(Integer, ForeignKey("veicoli.id_veicolo"), nullable=True)
+    id_veicolo = Column(Integer, nullable=True)
     nome_compagnia_veicolo = Column(String, nullable=True)
     km_totali_veicolo = Column(Float, nullable=True)
     lato_erogazione = Column(Integer, nullable=False)
