@@ -95,7 +95,7 @@ class Controller:
 
     async def valida_tessera(self, card_id: str):
         async with async_session() as session:
-            autista = await autisti_crud.get_autista(session, card_id)
+            autista = await autisti_crud.get_autista_by_tessera(session, card_id)
             if autista:
                 logging.info(f"[INFO]: Tessera valida trovata nel DB: {card_id}")
                 self._temp_validated_autista = autista
