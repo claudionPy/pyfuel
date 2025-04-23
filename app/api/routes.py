@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session
 from app.schemas import drivers as autisti_schemas, veichles as veicoli_schemas, erogations as erogazioni_schemas
@@ -130,3 +130,73 @@ async def update_veicolo(
 ):
     updated_veicolo = await veicoli_crud.update_veicolo(session, id_veicolo, veicolo)
     return updated_veicolo
+
+@router.get("/autisti/search/", response_model=List[autisti_schemas.Autista])
+async def search_autisti(
+    tessera: Optional[str] = Query(None),
+    nome_compagnia: Optional[str] = Query(None),
+    nome_autista: Optional[str] = Query(None),
+    richiedi_pin: Optional[bool] = Query(None),
+    richiedi_id_veicolo: Optional[bool] = Query(None),
+    session: AsyncSession = Depends(get_session)
+):
+    filters = {
+        'tessera': tessera,
+        'nome_compagnia': nome_compagnia,
+        'nome_autista': nome_autista,
+        'richiedi_pin': richiedi_pin,
+        'richiedi_id_veicolo': richiedi_id_veicolo
+    }
+    autisti = await autisti_crud.search_autisti(session, filters)
+    if not autisti:
+        raise HTTPException(status_code=404, detail="Nessun autista trovato")
+    return autisti
+
+@router.get("/veicoli/search/", response_model=List[veicoli_schemas.Veicolo])
+async def search_veicoli(
+    id_veicolo: Optional[int] = Query(None),
+    nome_compagnia: Optional[str] = Query(None),
+    targa: Optional[str] = Query(None),
+    richiedi_km_veicolo: Optional[bool] = Query(None),
+    session: AsyncSession = Depends(get_session)
+):
+    filters = {
+        'id_veicolo': id_veicolo,
+        'nome_compagnia': nome_compagnia,
+        'targa': targa,
+        'richiedi_km_veicolo': richiedi_km_veicolo
+    }
+    veicoli = await veicoli_crud.search_veicoli(session, filters)
+    if not veicoli:
+        raise HTTPException(status_code=404, detail="Nessun veicolo trovato")
+    return veicoli
+
+@router.get("/erogazioni/search/", response_model=List[erogazioni_schemas.Erogazione])
+async def search_erogazioni(
+    tessera: Optional[str] = Query(None),
+    id_veicolo: Optional[int] = Query(None),
+    nome_compagnia: Optional[str] = Query(None),
+    lato_erogazione: Optional[str] = Query(None),
+    modalita_erogazione: Optional[str] = Query(None),
+    prodotto_erogato: Optional[str] = Query(None),
+    km_totali_veicolo: Optional[float] = Query(None),
+    litri_erogati: Optional[float]      = Query(None),
+    session: AsyncSession = Depends(get_session)
+):
+    filters = {
+        'tessera': tessera,
+        'id_veicolo': id_veicolo,
+        'nome_compagnia': nome_compagnia,
+        'lato_erogazione': lato_erogazione,
+        'modalita_erogazione': modalita_erogazione,
+        'prodotto_erogato': prodotto_erogato,
+        'km_totali_veicolo': km_totali_veicolo,
+        'litri_erogati': litri_erogati
+    }
+    erogazioni = await erogazioni_crud.search_erogazioni(session, filters)
+    if not erogazioni:
+        raise HTTPException(status_code=404, detail="Nessuna erogazione trovata")
+    return erogazioni
+    return erogazioni
+
+

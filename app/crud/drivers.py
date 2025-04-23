@@ -47,3 +47,20 @@ async def update_autista(session: AsyncSession, tessera: str, autista_data):
     await session.commit()
     await session.refresh(autista)
     return autista
+
+async def search_autisti(session: AsyncSession, filters: dict):
+    query = select(Autista)
+    
+    if filters.get('tessera'):
+        query = query.where(Autista.tessera.ilike(f"%{filters['tessera']}%"))
+    if filters.get('nome_compagnia'):
+        query = query.where(Autista.nome_compagnia.ilike(f"%{filters['nome_compagnia']}%"))
+    if filters.get('nome_autista'):
+        query = query.where(Autista.nome_autista.ilike(f"%{filters['nome_autista']}%"))
+    if filters.get('richiedi_pin') is not None:
+        query = query.where(Autista.richiedi_pin == filters['richiedi_pin'])
+    if filters.get('richiedi_id_veicolo') is not None:
+        query = query.where(Autista.richiedi_id_veicolo == filters['richiedi_id_veicolo'])
+    
+    result = await session.execute(query)
+    return result.scalars().all()

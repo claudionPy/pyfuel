@@ -61,3 +61,18 @@ async def update_veicolo(session: AsyncSession, id_veicolo: int, veicolo_data):
     await session.commit()
     await session.refresh(veicolo)
     return veicolo
+    
+async def search_veicoli(session: AsyncSession, filters: dict):
+    query = select(Veicolo)
+    
+    if filters.get('id_veicolo'):
+        query = query.where(Veicolo.id_veicolo == filters['id_veicolo'])
+    if filters.get('nome_compagnia'):
+        query = query.where(Veicolo.nome_compagnia.ilike(f"%{filters['nome_compagnia']}%"))
+    if filters.get('targa'):
+        query = query.where(Veicolo.targa.ilike(f"%{filters['targa']}%"))
+    if filters.get('richiedi_km_veicolo') is not None:
+        query = query.where(Veicolo.richiedi_km_veicolo == filters['richiedi_km_veicolo'])
+    
+    result = await session.execute(query)
+    return result.scalars().all()
