@@ -242,7 +242,13 @@ async def list_erogazioni(
 ):
     skip = (page - 1) * limit
     total = await session.scalar(select(func.count()).select_from(Erogazione))
-    result = await session.execute(select(Erogazione).offset(skip).limit(limit))
+    stmt = (
+        select(Erogazione)
+        .order_by(Erogazione.timestamp_erogazione.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await session.execute(stmt)
     items = result.scalars().all()
     return Paginated(total=total, page=page, limit=limit, items=items)
 
@@ -282,9 +288,12 @@ async def search_erogazioni(
             query = query.where(column == val)
         else:
             query = query.where(column.ilike(f"%{val}%"))
+    # ORDINA PER timestamp decrescente
+    query = query.order_by(Erogazione.timestamp_erogazione.desc())
     total = await session.scalar(select(func.count()).select_from(query.subquery()))
     skip = (page - 1) * limit
-    result = await session.execute(query.offset(skip).limit(limit))
+    stmt = query.offset(skip).limit(limit)
+    result = await session.execute(stmt)
     items = result.scalars().all()
     return Paginated(total=total, page=page, limit=limit, items=items)
 
