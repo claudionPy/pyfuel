@@ -3,9 +3,9 @@ from app.database import Base
 
 class Veicolo(Base):
     __tablename__ = "veicoli"
-    id_veicolo = Column(Integer, primary_key=True, index=True)
+    id_veicolo = Column(String, primary_key=True)
     nome_compagnia = Column(String)
     richiedi_km_veicolo = Column(Boolean)
-    km_totali_veicolo = Column(Float)
+    km_totali_veicolo = Column(String)
     targa = Column(String, unique=True, nullable=False)
 

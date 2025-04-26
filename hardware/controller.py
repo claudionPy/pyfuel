@@ -16,7 +16,7 @@ class Controller:
     def __init__(self):
         self.fuel_sides = FuelSides(
             side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, product="Benzina", isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
-            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, product="Gasolio", isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
+            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, product="Gasolio", isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
             side_3=FuelParameters(),
             side_4=FuelParameters()
         )
@@ -77,9 +77,10 @@ class Controller:
             await asyncio.sleep(60)
 
     def listen_rfid(self, card_id):
-        """
-        Gestisce l'input RFID: avvia un task asincrono per validare la tessera nel database.
-        """
+        if self.card_validated:
+            logging.info("[INFO]: Tessera già validata; seleziona un lato.")
+            return
+        
         if not any(side.isAutomatic for side in vars(self.fuel_sides).values()):
             logging.info("[INFO]: Tutti i lati in modalità manuale; validazione RFID disattivata.")
             return
@@ -106,7 +107,7 @@ class Controller:
                 elif autista.richiedi_id_veicolo:
                     await self.prompt_for_vehicle(autista)
                 else:
-                    self.handle_rfid_validation(autista.tessera)
+                    self.handle_rfid_validation()
             else:
                 logging.info(f"[INFO]: Tessera non trovata nel DB: {card_id}")
                 self.view.update_main_label(self.params.ref_MainLabel)
@@ -138,7 +139,7 @@ class Controller:
             if autista.richiedi_id_veicolo:
                 await self.prompt_for_vehicle(autista)
             else:
-                self.handle_rfid_validation(autista.tessera)
+                self.handle_rfid_validation()
         else:
             logging.info("[INFO]: PIN errato.")
             self.view.update_main_label("PIN ERRATO")
@@ -155,14 +156,8 @@ class Controller:
         keypad_window = KeypadWindow(self.view, "Inserisci ID Veicolo", "Inserisci l'ID del veicolo:", vehicle_callback)
 
         try:
-            vehicle_id_str = await asyncio.wait_for(future, timeout=20)
-            try:
-                vehicle_id = int(vehicle_id_str)
+            vehicle_id = await asyncio.wait_for(future, timeout=20)
 
-            except ValueError:
-                self.view.update_main_label("ID VEICOLO NON VALIDO")
-                return
-            
         except asyncio.TimeoutError:
             keypad_window.destroy()
             self.view.update_main_label("TEMPO SCADUTO")
@@ -195,20 +190,20 @@ class Controller:
                     km_str = await asyncio.wait_for(future_km, timeout=20)
 
                     try:
-                        km_value = float(km_str)
+                        km_value = int(km_str)
                     except ValueError:
                         self.view.update_main_label("KM NON VALIDI")
                         await asyncio.sleep(3)
                         self.view.update_main_label(self.params.aut_MainLabel)
                         return
                     
-                    if km_value <= veicolo.km_totali_veicolo:
+                    if km_value <= int(veicolo.km_totali_veicolo):
                         self.view.update_main_label("KM INSERITI TROPPO BASSI")
                         await asyncio.sleep(3)
                         self.view.update_main_label(self.params.aut_MainLabel)
                         return
                     
-                    veicolo.km_totali_veicolo = km_value
+                    veicolo.km_totali_veicolo = str(km_value)
                     await session.commit()
                     logging.info(f"[INFO]: Veicolo aggiornato con nuovi KM: {km_value}")
                     
@@ -219,7 +214,7 @@ class Controller:
                     self.view.update_main_label(self.params.aut_MainLabel)
                     return
             # Se tutto è valido, prosegui
-            self.handle_rfid_validation(autista.tessera)
+            self.handle_rfid_validation()
 
 
 
@@ -291,11 +286,7 @@ class Controller:
                 return None
 
 
-    def handle_rfid_validation(self, card_id):
-        if self.card_validated:
-            logging.info("[INFO]: Tessera già validata; seleziona un lato.")
-            return
-        
+    def handle_rfid_validation(self):   
         self.card_validated = True
         self.view.update_main_label(self.params.sel_MainLabel)
         for side, (gui_obj, pump_obj) in self.sides.items():
