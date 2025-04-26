@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
 class VeicoloBase(BaseModel):
-    id_veicolo: int
+    id_veicolo: str
     nome_compagnia: str
     richiedi_km_veicolo: bool
-    km_totali_veicolo: float
+    km_totali_veicolo: str
     targa: str
 
 class VeicoloCreate(VeicoloBase):

@@ -6,9 +6,9 @@ class ErogazioneBase(BaseModel):
     tessera: Optional[str] = None
     nome_compagnia: Optional[str] = None
     nome_autista: Optional[str] = None
-    id_veicolo: Optional[int] = None
+    id_veicolo: Optional[str] = None
     nome_compagnia_veicolo: Optional[str] = None
-    km_totali_veicolo: Optional[float] = None
+    km_totali_veicolo: Optional[str] = None
     lato_erogazione: int
     litri_erogati: float
     prodotto_erogato: str

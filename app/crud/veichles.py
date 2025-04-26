@@ -7,7 +7,7 @@ async def get_veicoli_all(session: AsyncSession):
     result = await session.execute(select(Veicolo))
     return result.scalars().all()
 
-async def get_veicolo_by_id(session: AsyncSession, id_veicolo: int):
+async def get_veicolo_by_id(session: AsyncSession, id_veicolo: str):
     result = await session.execute(select(Veicolo).filter(Veicolo.id_veicolo == id_veicolo))
     return result.scalars().first()
 
@@ -30,14 +30,14 @@ async def create_veicolo(session: AsyncSession, veicolo_data):
     await session.refresh(new_veicolo)
     return new_veicolo
 
-async def delete_veicolo_by_id(session: AsyncSession, id_veicolo: int) -> bool:
+async def delete_veicolo_by_id(session: AsyncSession, id_veicolo: str) -> bool:
     result = await session.execute(
         delete(Veicolo).where(Veicolo.id_veicolo == id_veicolo)
     )
     await session.commit()
     return result.rowcount > 0
 
-async def update_veicolo(session: AsyncSession, id_veicolo: int, veicolo_data):
+async def update_veicolo(session: AsyncSession, id_veicolo: str, veicolo_data):
     veicolo = await get_veicolo_by_id(session, id_veicolo)
     if not veicolo:
         raise HTTPException(status_code=404, detail="Veicolo non trovato")
@@ -66,12 +66,14 @@ async def search_veicoli(session: AsyncSession, filters: dict):
     query = select(Veicolo)
     
     if filters.get('id_veicolo'):
-        query = query.where(Veicolo.id_veicolo == filters['id_veicolo'])
+        query = query.where(Veicolo.id_veicolo.ilike(f"%{filters['id_veicolo']}%"))
     if filters.get('nome_compagnia'):
         query = query.where(Veicolo.nome_compagnia.ilike(f"%{filters['nome_compagnia']}%"))
+    if filters.get('km_totali_veicolo'):
+        query = query.where(Veicolo.km_totali_veicolo == filters['km_totali_veicolo'])
     if filters.get('targa'):
         query = query.where(Veicolo.targa.ilike(f"%{filters['targa']}%"))
-    if filters.get('richiedi_km_veicolo') is not None:
+    if filters.get('richiedi_km_veicolo'):
         query = query.where(Veicolo.richiedi_km_veicolo == filters['richiedi_km_veicolo'])
     
     result = await session.execute(query)
