@@ -15,8 +15,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 class Controller:
     def __init__(self):
         self.fuel_sides = FuelSides(
-            side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, product="Benzina", isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
-            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, product="Gasolio", isAutomatic=True, relayActivationDelay=3, simulation_pulser=True),
+            side_1=FuelParameters(sideExists=True, pulserPin=18, nozzleSwitchPin=5, relaySwitchPin=17, pulsesPerLiter=100, price=1.000, product="Benzina", isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
+            side_2=FuelParameters(sideExists=True, pulserPin=13, nozzleSwitchPin=24, relaySwitchPin=27, pulsesPerLiter=100, price=1.000, product="Gasolio", isAutomatic=False, relayActivationDelay=3, simulation_pulser=True),
             side_3=FuelParameters(),
             side_4=FuelParameters()
         )
@@ -219,12 +219,6 @@ class Controller:
 
 
     async def register_erogation_record_from_validated(self, side_number: int):
-        """
-        Registra il record di erogazione nel DB usando i dati validati
-        memorizzati nei dizionari self.validated_autisti e self.validated_veicoli per il lato specifico.
-        Se i dati dell'autista non sono stati validati, significa che l'erogazione è manuale.
-        """
-        # Recupera il PumpObject per il lato specifico
         _, pump_obj = self.sides.get(f"side_{side_number}")
         
         # Calcola i litri erogati

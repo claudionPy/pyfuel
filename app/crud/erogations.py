@@ -39,6 +39,11 @@ async def search_erogazioni(session: AsyncSession, filters: dict):
     if filters.get('litri_erogati') is not None:
         query = query.where(Erogazione.litri_erogati == filters['litri_erogati'])
     
+    # Add time filtering
+    if filters.get('start_time'):
+        query = query.where(Erogazione.timestamp_erogazione >= filters['start_time'])
+    if filters.get('end_time'):
+        query = query.where(Erogazione.timestamp_erogazione <= filters['end_time'])
+    
     result = await session.execute(query)
     return result.scalars().all()
-

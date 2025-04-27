@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
+from datetime import datetime
 
 from app.database import get_session
 from app.schemas import (
@@ -257,18 +258,32 @@ async def list_erogazioni(
     response_model=Paginated[erogazioni_schemas.Erogazione],
 )
 async def search_erogazioni(
-    tessera: Optional[str] = Query(None),
-    id_veicolo: Optional[int] = Query(None),
-    nome_compagnia: Optional[str] = Query(None),
-    lato_erogazione: Optional[int] = Query(None),
-    modalita_erogazione: Optional[str] = Query(None),
-    prodotto_erogato: Optional[str] = Query(None),
-    km_totali_veicolo: Optional[str] = Query(None),
-    litri_erogati: Optional[float] = Query(None),
-    page: int = Query(1, ge=1),
-    limit: int = Query(25, ge=1, le=100),
-    session: AsyncSession = Depends(get_session),
+    tessera: Optional[str]            = Query(None),
+    id_veicolo: Optional[int]         = Query(None),
+    nome_compagnia: Optional[str]     = Query(None),
+    lato_erogazione: Optional[int]    = Query(None),
+    modalita_erogazione: Optional[str]= Query(None),
+    prodotto_erogato: Optional[str]   = Query(None),
+    km_totali_veicolo: Optional[str]  = Query(None),
+    litri_erogati: Optional[float]    = Query(None),
+    start_time: Optional[datetime]    = Query(
+        None,
+        alias="start_time",
+        description="Start time in ISO-8601 format, e.g. 2025-04-26T10:50"
+    ),
+    end_time: Optional[datetime]      = Query(
+        None,
+        alias="end_time",
+        description="End time in ISO-8601 format, e.g. 2025-04-26T10:52"
+    ),
+    page: int                         = Query(1, ge=1),
+    limit: int                        = Query(25, ge=1, le=100),
+    session: AsyncSession             = Depends(get_session),
 ):
+    # Build the base query
+    query = select(Erogazione)
+
+    # Apply simple filters
     filters = {
         "tessera": tessera,
         "id_veicolo": id_veicolo,
@@ -279,7 +294,6 @@ async def search_erogazioni(
         "km_totali_veicolo": km_totali_veicolo,
         "litri_erogati": litri_erogati,
     }
-    query = select(Erogazione)
     for attr, val in filters.items():
         if val is None:
             continue
@@ -288,13 +302,21 @@ async def search_erogazioni(
             query = query.where(column == val)
         else:
             query = query.where(column.ilike(f"%{val}%"))
-    # ORDINA PER timestamp decrescente
+
+    # Apply datetime filters (now true datetime objects)
+    if start_time:
+        query = query.where(Erogazione.timestamp_erogazione >= start_time)
+    if end_time:
+        query = query.where(Erogazione.timestamp_erogazione <= end_time)
+
+    # Order and paginate
     query = query.order_by(Erogazione.timestamp_erogazione.desc())
     total = await session.scalar(select(func.count()).select_from(query.subquery()))
     skip = (page - 1) * limit
     stmt = query.offset(skip).limit(limit)
     result = await session.execute(stmt)
     items = result.scalars().all()
+
     return Paginated(total=total, page=page, limit=limit, items=items)
 
 @router.delete(
