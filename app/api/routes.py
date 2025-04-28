@@ -19,8 +19,11 @@ from app.crud import (
 from app.models.drivers import Autista
 from app.models.veichles import Veicolo
 from app.models.erogations import Erogazione
+from src.config.loader import ConfigManager
+from app.schemas.config import FullConfigSchema
 
 router = APIRouter()
+cfg_mgr = ConfigManager(config_path="src/config/config.json")
 
 # ——— AUTISTI ———
 
@@ -331,4 +334,31 @@ async def delete_erogations(
     deleted = await erogazioni_crud.delete_erogazioni(session)
     if not deleted:
         raise HTTPException(status_code=404, detail="Nessuna erogazione trovata")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.get("/parameters/", response_model=FullConfigSchema)
+def read_parameters():
+    """
+    Legge il file JSON (merge con default se mancante) e lo restituisce.
+    """
+    return cfg_mgr.load_config()
+
+@router.put("/parameters/", response_model=FullConfigSchema)
+def update_parameters(new_cfg: FullConfigSchema):
+    """
+    Sovrascrive il file JSON con la configurazione inviata.
+    """
+    saved = cfg_mgr.save_config(new_cfg.dict())
+    if not saved:
+        # potete lanciare HTTPException(500) se preferite
+        return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return cfg_mgr.current_config
+
+@router.post("/parameters/reset", status_code=status.HTTP_204_NO_CONTENT)
+def reset_parameters():
+    """
+    Ripristina i valori di default e salva sul file.
+    """
+    # save_config accetta un dict identico a default_config
+    cfg_mgr.save_config(cfg_mgr.default_config)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
