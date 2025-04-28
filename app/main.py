@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.api.routes import router as api_router
@@ -15,8 +16,8 @@ app.add_middleware(
 )
 
 # Eventi di avvio e spegnimento
-@app.on_event("startup")
-async def on_startup():
+@asynccontextmanager
+async def lifespan():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
