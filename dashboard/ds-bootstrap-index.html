@@ -300,8 +300,8 @@
         #export-vehicles,
         #export-drivers {
             background-color: #6c757d !important;
-            border-color:     #6c757d !important;
-            color:            #fff !important;
+            border-color: #6c757d !important;
+            color: #fff !important;
         }
 
         /* Tutto (arancione) */
@@ -309,8 +309,8 @@
         #export-all-vehicles,
         #export-all-drivers {
             background-color: #fd7e14 !important;
-            border-color:     #fd7e14 !important;
-            color:            #fff !important;
+            border-color: #fd7e14 !important;
+            color: #fff !important;
         }
 
         /* Parameters section styles */
@@ -321,7 +321,7 @@
 
         .accordion-button:focus {
             box-shadow: none;
-            border-color: rgba(0,0,0,.125);
+            border-color: rgba(0, 0, 0, .125);
         }
 
         .parameters-card {
@@ -369,7 +369,7 @@
             </button>
             <button data-tab="parameters" class="nav-link">
                 <i class="bi bi-gear"></i>
-                Parameters
+                Parametri
             </button>
         </div>
     </div>
@@ -382,33 +382,33 @@
                 <h2 class="section-title">
                     <i class="bi bi-fuel-pump"></i>Dati Erogazioni
                 </h2>
-                    <div class="search-container">
-                        <div class="datetime-picker-container">
-                            <div class="input-group">
-                                <span class="input-group-text">Da</span>
-                                <input type="datetime-local" class="form-control" id="dispenses-start-filter">
-                            </div>
+                <div class="search-container">
+                    <div class="datetime-picker-container">
+                        <div class="input-group">
+                            <span class="input-group-text">Da</span>
+                            <input type="datetime-local" class="form-control" id="dispenses-start-filter">
                         </div>
-                        <div class="datetime-picker-container">
-                            <div class="input-group">
-                                <span class="input-group-text">A</span>
-                                <input type="datetime-local" class="form-control" id="dispenses-end-filter">
-                                <button class="btn btn-outline-primary" id="apply-time-filter" type="button">
-                                    <i class="bi bi-funnel"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary" id="clear-time-filter" type="button">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            </div>
+                    </div>
+                    <div class="datetime-picker-container">
+                        <div class="input-group">
+                            <span class="input-group-text">A</span>
+                            <input type="datetime-local" class="form-control" id="dispenses-end-filter">
+                            <button class="btn btn-outline-primary" id="apply-time-filter" type="button">
+                                <i class="bi bi-funnel"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" id="clear-time-filter" type="button">
+                                <i class="bi bi-x"></i>
+                            </button>
                         </div>
-                        <div class="search-group">
-                            <div class="search-bar">
-                                <input type="text" id="dispenses-search" class="form-control"
-                                    placeholder='Search (e.g., tessera: 30483377)'>
-                                <button id="search-dispenses" class="btn btn-outline-secondary" type="button">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                            </div>
+                    </div>
+                    <div class="search-group">
+                        <div class="search-bar">
+                            <input type="text" id="dispenses-search" class="form-control"
+                                placeholder='Cerca (es. tessera: 123456...)'>
+                            <button id="search-dispenses" class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
 
                         <div class="dropdown">
                             <button class="btn btn-outline-info dropdown-toggle" type="button"
@@ -421,13 +421,15 @@
                         </div>
                         <div class="btn-group">
                             <button id="load-dispenses" class="btn btn-primary" title="Carica">
-                                <span id="dispenses-loading" class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                                <span id="dispenses-loading" class="spinner-border spinner-border-sm d-none"
+                                    aria-hidden="true"></span>
                                 <i class="bi bi-arrow-clockwise"></i>
                             </button>
                             <button id="export-dispenses" class="btn btn-success" title="Esporta pagina">
                                 <i class="bi bi-download"></i>
                             </button>
-                            <button id="export-all-dispenses" class="btn btn-success" title="Esporta tutto">Esporta Tutto
+                            <button id="export-all-dispenses" class="btn btn-success" title="Esporta tutto">Esporta
+                                Tutto
                                 <i class="bi bi-download"></i>
                             </button>
                             <button id="delete-all-dispenses" class="btn btn-danger" title="Elimina tutto">
@@ -442,15 +444,15 @@
                 <table id="dispense-table" class="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>Card Number</th>
-                            <th>Vehicle ID</th>
-                            <th>Company</th>
-                            <th>Veichle KM</th>
-                            <th>Side</th>
-                            <th>Mode</th>
-                            <th>Product</th>
-                            <th>Total liters</th>
-                            <th>Timestamp</th>
+                            <th>Tessera</th>
+                            <th>ID Veicolo</th>
+                            <th>Compagnia</th>
+                            <th>KM Veicolo</th>
+                            <th>Lato</th>
+                            <th>Modalità</th>
+                            <th>Prodotto</th>
+                            <th>Litri totali</th>
+                            <th>Data e ora</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -459,7 +461,7 @@
 
             <div class="pagination-container">
                 <div class="page-size-selector">
-                    <span class="me-2">Items per page:</span>
+                    <span class="me-2">Dati per pagina:</span>
                     <select class="form-select form-select-sm" id="dispenses-page-size">
                         <option value="10">10</option>
                         <option value="25" selected>25</option>
@@ -481,7 +483,7 @@
                     <div class="search-group">
                         <div class="search-bar">
                             <input type="text" id="vehicles-search" class="form-control"
-                                placeholder='Search (e.g., id_veicolo: 123)'>
+                                placeholder='Cerca (es. id_veicolo: 1234...)'>
                             <button id="search-vehicles" class="btn btn-outline-secondary">
                                 <i class="bi bi-search"></i>
                             </button>
@@ -521,12 +523,12 @@
                 <table id="vehicles-table" class="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>Vehicle ID</th>
-                            <th>Company</th>
-                            <th>Total KM</th>
-                            <th>Plate</th>
-                            <th>Request KM?</th>
-                            <th>Actions</th>
+                            <th>ID Veicolo</th>
+                            <th>Compagnia</th>
+                            <th>KM Totali</th>
+                            <th>Targa</th>
+                            <th>Rechiedi KM?</th>
+                            <th>Azioni</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -535,7 +537,7 @@
 
             <div class="pagination-container">
                 <div class="page-size-selector">
-                    <span class="me-2">Items per page:</span>
+                    <span class="me-2">Dati per pagina:</span>
                     <select class="form-select form-select-sm" id="vehicles-page-size">
                         <option value="10">10</option>
                         <option value="25" selected>25</option>
@@ -557,7 +559,7 @@
                     <div class="search-group">
                         <div class="search-bar">
                             <input type="text" id="drivers-search" class="form-control"
-                                placeholder='Search (e.g., tessera: 30483377)'>
+                                placeholder='Cerca (es. tessera: 123456...)'>
                             <button id="search-drivers" class="btn btn-outline-secondary">
                                 <i class="bi bi-search"></i>
                             </button>
@@ -597,13 +599,13 @@
                 <table id="drivers-table" class="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>Card Number</th>
-                            <th>Company</th>
-                            <th>Full name</th>
-                            <th>Pin</th>
-                            <th>Request PIN?</th>
-                            <th>Request Vehicle ID?</th>
-                            <th>Actions</th>
+                            <th>Tessera</th>
+                            <th>Compagnia</th>
+                            <th>Nome autista</th>
+                            <th>PIN</th>
+                            <th>Richiedi PIN?</th>
+                            <th>Richiedi ID veicolo?</th>
+                            <th>Azioni</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -612,7 +614,7 @@
 
             <div class="pagination-container">
                 <div class="page-size-selector">
-                    <span class="me-2">Items per page:</span>
+                    <span class="me-2">Dati per pagina:</span>
                     <select class="form-select form-select-sm" id="drivers-page-size">
                         <option value="10">10</option>
                         <option value="25" selected>25</option>
@@ -626,39 +628,41 @@
         <section id="parameters" class="tab-content" style="display:none">
             <div class="section-header">
                 <h2 class="section-title">
-                    <i class="bi bi-gear"></i>System Parameters
+                    <i class="bi bi-gear"></i>Parameteri di sistema
                 </h2>
                 <div class="btn-group">
                     <button id="load-parameters" class="btn btn-primary">
-                        <span id="parameters-loading" class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
-                        <i class="bi bi-arrow-clockwise"></i> Reload
+                        <span id="parameters-loading" class="spinner-border spinner-border-sm d-none"
+                            aria-hidden="true"></span>
+                        <i class="bi bi-arrow-clockwise"></i> Ricarica
                     </button>
                     <button id="save-parameters" class="btn btn-success">
-                        <i class="bi bi-save"></i> Save All
+                        <i class="bi bi-save"></i> Salva
                     </button>
                     <button id="reset-parameters" class="btn btn-warning">
-                        <i class="bi bi-arrow-counterclockwise"></i> Reset Defaults
+                        <i class="bi bi-arrow-counterclockwise"></i> Ripristina
                     </button>
                 </div>
             </div>
-        
+
             <div class="accordion" id="parametersAccordion">
                 <!-- Fuel Parameters Accordion Item -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
                             data-bs-target="#fuelParamsCollapse">
-                            <i class="bi bi-fuel-pump me-2"></i>Fuel Parameters
+                            <i class="bi bi-fuel-pump me-2"></i>Parametri Fuel
                         </button>
                     </h2>
-                    <div id="fuelParamsCollapse" class="accordion-collapse collapse show" data-bs-parent="#parametersAccordion">
+                    <div id="fuelParamsCollapse" class="accordion-collapse collapse show"
+                        data-bs-parent="#parametersAccordion">
                         <div class="accordion-body">
                             <div class="row">
                                 <!-- Side 1 -->
                                 <div class="col-md-6 mb-4">
                                     <div class="card">
-                                        <div class="card-header bg-primary text-white">
-                                            <h5 class="card-title mb-0">Side 1</h5>
+                                        <div class="card-header bg-secondary text-white">
+                                            <h5 class="card-title mb-0">LATO 1</h5>
                                         </div>
                                         <div class="card-body" id="fuel-side-1-params">
                                             <!-- Will be populated by JavaScript -->
@@ -668,8 +672,8 @@
                                 <!-- Side 2 -->
                                 <div class="col-md-6 mb-4">
                                     <div class="card">
-                                        <div class="card-header bg-primary text-white">
-                                            <h5 class="card-title mb-0">Side 2</h5>
+                                        <div class="card-header bg-secondary text-white">
+                                            <h5 class="card-title mb-0">LATO 2</h5>
                                         </div>
                                         <div class="card-body" id="fuel-side-2-params">
                                             <!-- Will be populated by JavaScript -->
@@ -680,7 +684,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card">
                                         <div class="card-header bg-secondary text-white">
-                                            <h5 class="card-title mb-0">Side 3</h5>
+                                            <h5 class="card-title mb-0">LATO 3</h5>
                                         </div>
                                         <div class="card-body" id="fuel-side-3-params">
                                             <!-- Will be populated by JavaScript -->
@@ -691,7 +695,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card">
                                         <div class="card-header bg-secondary text-white">
-                                            <h5 class="card-title mb-0">Side 4</h5>
+                                            <h5 class="card-title mb-0">LATO 4</h5>
                                         </div>
                                         <div class="card-body" id="fuel-side-4-params">
                                             <!-- Will be populated by JavaScript -->
@@ -702,23 +706,24 @@
                         </div>
                     </div>
                 </div>
-        
+
                 <!-- GUI Parameters Accordion Item -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                             data-bs-target="#guiParamsCollapse">
-                            <i class="bi bi-display me-2"></i>GUI Parameters
+                            <i class="bi bi-display me-2"></i>Parametri GUI
                         </button>
                     </h2>
-                    <div id="guiParamsCollapse" class="accordion-collapse collapse" data-bs-parent="#parametersAccordion">
+                    <div id="guiParamsCollapse" class="accordion-collapse collapse"
+                        data-bs-parent="#parametersAccordion">
                         <div class="accordion-body">
                             <div class="row">
                                 <!-- Side 1 -->
                                 <div class="col-md-6 mb-4">
                                     <div class="card">
                                         <div class="card-header bg-primary text-white">
-                                            <h5 class="card-title mb-0">Side 1</h5>
+                                            <h5 class="card-title mb-0">LATO 1</h5>
                                         </div>
                                         <div class="card-body" id="gui-side-1-params">
                                             <!-- Will be populated by JavaScript -->
@@ -729,7 +734,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card">
                                         <div class="card-header bg-primary text-white">
-                                            <h5 class="card-title mb-0">Side 2</h5>
+                                            <h5 class="card-title mb-0">LATO 2</h5>
                                         </div>
                                         <div class="card-body" id="gui-side-2-params">
                                             <!-- Will be populated by JavaScript -->
@@ -740,7 +745,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card">
                                         <div class="card-header bg-secondary text-white">
-                                            <h5 class="card-title mb-0">Side 3</h5>
+                                            <h5 class="card-title mb-0">LATO 3</h5>
                                         </div>
                                         <div class="card-body" id="gui-side-3-params">
                                             <!-- Will be populated by JavaScript -->
@@ -751,7 +756,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card">
                                         <div class="card-header bg-secondary text-white">
-                                            <h5 class="card-title mb-0">Side 4</h5>
+                                            <h5 class="card-title mb-0">LATO 4</h5>
                                         </div>
                                         <div class="card-body" id="gui-side-4-params">
                                             <!-- Will be populated by JavaScript -->
@@ -762,16 +767,17 @@
                         </div>
                     </div>
                 </div>
-        
+
                 <!-- Main Parameters Accordion Item -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                             data-bs-target="#mainParamsCollapse">
-                            <i class="bi bi-gear-wide me-2"></i>Main Parameters
+                            <i class="bi bi-gear-wide me-2"></i>Parametri Principali
                         </button>
                     </h2>
-                    <div id="mainParamsCollapse" class="accordion-collapse collapse" data-bs-parent="#parametersAccordion">
+                    <div id="mainParamsCollapse" class="accordion-collapse collapse"
+                        data-bs-parent="#parametersAccordion">
                         <div class="accordion-body">
                             <div class="card">
                                 <div class="card-body" id="main-params">
@@ -802,16 +808,16 @@
                             <input type="text" class="form-control" id="id_veicolo" name="id_veicolo" required>
                         </div>
                         <div class="mb-3">
-                            <label for="nome_compagnia" class="form-label">Company</label>
+                            <label for="nome_compagnia" class="form-label">Compagnia</label>
                             <input type="text" class="form-control" id="nome_compagnia" name="nome_compagnia" required>
                         </div>
                         <div class="mb-3">
-                            <label for="km_totali_veicolo" class="form-label">Starting KM</label>
+                            <label for="km_totali_veicolo" class="form-label">KM Iniziali</label>
                             <input type="number" class="form-control" id="km_totali_veicolo" name="km_totali_veicolo"
                                 min="0" step="0.1" required>
                         </div>
                         <div class="mb-3">
-                            <label for="targa" class="form-label">Plate</label>
+                            <label for="targa" class="form-label">Targa</label>
                             <input type="text" class="form-control" id="targa" name="targa" required>
                         </div>
                         <div class="mb-3 form-check">
@@ -842,15 +848,15 @@
                 <div class="modal-body">
                     <form id="form-driver">
                         <div class="mb-3">
-                            <label for="tessera" class="form-label">Card Number</label>
+                            <label for="tessera" class="form-label">Tessera</label>
                             <input type="text" class="form-control" id="tessera" name="tessera" required>
                         </div>
                         <div class="mb-3">
-                            <label for="nome_compagnia" class="form-label">Company</label>
+                            <label for="nome_compagnia" class="form-label">Compagnia</label>
                             <input type="text" class="form-control" id="nome_compagnia" name="nome_compagnia" required>
                         </div>
                         <div class="mb-3">
-                            <label for="nome_autista" class="form-label">Full name</label>
+                            <label for="nome_autista" class="form-label">Nome autista</label>
                             <input type="text" class="form-control" id="nome_autista" name="nome_autista" required>
                         </div>
                         <div class="mb-3 form-check">
@@ -863,9 +869,10 @@
                             <label class="form-check-label" for="richiedi_id_veicolo">Richiedi ID Veicolo</label>
                         </div>
                         <div class="mb-3">
-                            <label for="pin" class="form-label">Pin</label>
+                            <label for="pin" class="form-label">PIN</label>
                             <input type="text" class="form-control" id="pin" name="pin">
-                            <div id="pin-error" class="invalid-feedback">PIN is required when "Richiedi PIN" is checked
+                            <div id="pin-error" class="invalid-feedback">PIN richiesto quando "Richiedi PIN" è
+                                selezionato.
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-2">
@@ -893,6 +900,7 @@
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script>
     <script src="ds-bootstrap-script.js"></script>
 </body>
 
