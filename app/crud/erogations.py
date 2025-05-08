@@ -1,49 +1,46 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.erogations import Erogazione
-from typing import Optional
+from app.models.erogations import Erogation
 
-async def get_erogazioni(session: AsyncSession):
-    result = await session.execute(select(Erogazione))
-    return result.scalars().all()
+"""async def getErogations(session: AsyncSession):
+    result = await session.execute(select(Erogation))
+    return result.scalars().all()"""
 
-async def create_erogazione(session: AsyncSession, erogazione_data):
-    new_erogazione = Erogazione(**erogazione_data.dict())
-    session.add(new_erogazione)
+async def createErogation(session: AsyncSession, erogation_data):
+    new_erogation = Erogation(**erogation_data.dict())
+    session.add(new_erogation)
     await session.commit()
-    await session.refresh(new_erogazione)
-    return new_erogazione
+    await session.refresh(new_erogation)
+    return new_erogation
 
-async def delete_erogazioni(session: AsyncSession):
-    result = await session.execute(delete(Erogazione))
+async def deleteErogations(session: AsyncSession):
+    result = await session.execute(delete(Erogation))
     await session.commit()
     return result.rowcount > 0
 
-async def search_erogazioni(session: AsyncSession, filters: dict):
-    query = select(Erogazione)
+async def searchErogations(session: AsyncSession, filters: dict):
+    query = select(Erogation)
     
-    if filters.get('tessera'):
-        query = query.where(Erogazione.tessera.ilike(f"%{filters['tessera']}%"))
-    if filters.get('id_veicolo'):
-        query = query.where(Erogazione.id_veicolo.ilike(f"%{filters['id_veicolo']}%"))
-    if filters.get('nome_compagnia'):
-        query = query.where(Erogazione.nome_compagnia.ilike(f"%{filters['nome_compagnia']}%"))
-    if filters.get('lato_erogazione'):
-        query = query.where(Erogazione.lato_erogazione == filters['lato_erogazione'])
-    if filters.get('modalita_erogazione'):
-        query = query.where(Erogazione.modalita_erogazione.ilike(f"%{filters['modalita_erogazione']}%"))
-    if filters.get('prodotto_erogato'):
-        query = query.where(Erogazione.prodotto_erogato.ilike(f"%{filters['prodotto_erogato']}%"))
-    if filters.get('km_totali_veicolo'):
-        query = query.where(Erogazione.km_totali_veicolo == filters['km_totali_veicolo'])
-    if filters.get('litri_erogati') is not None:
-        query = query.where(Erogazione.litri_erogati == filters['litri_erogati'])
-    
-    # Add time filtering
+    if filters.get('card'):
+        query = query.where(Erogation.card.ilike(f"%{filters['card']}%"))
+    if filters.get('vehicle_id'):
+        query = query.where(Erogation.vehicle_id.ilike(f"%{filters['vehicle_id']}%"))
+    if filters.get('company'):
+        query = query.where(Erogation.company.ilike(f"%{filters['company']}%"))
+    if filters.get('erogation_side'):
+        query = query.where(Erogation.erogation_side == filters['erogation_side'])
+    if filters.get('mode'):
+        query = query.where(Erogation.mode.ilike(f"%{filters['mode']}%"))
+    if filters.get('dispensed_product'):
+        query = query.where(Erogation.dispensed_product.ilike(f"%{filters['dispensed_product']}%"))
+    if filters.get('vehicle_total_km'):
+        query = query.where(Erogation.vehicle_total_km == filters['vehicle_total_km'])
+    if filters.get('dispensed_liters') is not None:
+        query = query.where(Erogation.dispensed_liters == filters['dispensed_liters'])
     if filters.get('start_time'):
-        query = query.where(Erogazione.timestamp_erogazione >= filters['start_time'])
+        query = query.where(Erogation.erogation_timestamp >= filters['start_time'])
     if filters.get('end_time'):
-        query = query.where(Erogazione.timestamp_erogazione <= filters['end_time'])
+        query = query.where(Erogation.erogation_timestamp <= filters['end_time'])
     
     result = await session.execute(query)
     return result.scalars().all()

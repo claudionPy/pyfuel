@@ -1,66 +1,64 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from app.models.drivers import Autista
+from app.models.drivers import Driver
 
-async def get_autisti_all(session: AsyncSession):
-    result = await session.execute(select(Autista))
-    return result.scalars().all()
+"""async def getAllDrivers(session: AsyncSession):
+    result = await session.execute(select(Driver))
+    return result.scalars().all()"""
 
-async def get_autista_by_tessera(session: AsyncSession, tessera: str):
-    result = await session.execute(select(Autista).filter(Autista.tessera == tessera))
+async def getDriverByCard(session: AsyncSession, card: str):
+    result = await session.execute(select(Driver).filter(Driver.card == card))
     return result.scalars().first()
 
-async def create_autista(session: AsyncSession, autista_data):
-    existing = await get_autista_by_tessera(session, autista_data.tessera)
+async def createDriver(session: AsyncSession, driver_data):
+    existing = await getDriverByCard(session, driver_data.card)
     if existing:
-        raise HTTPException(status_code=400, detail="Autista con questa tessera già esistente")
+        raise HTTPException(status_code=400, detail="Autista con questa card già esistente")
     
-    new_autista = Autista(**autista_data.dict())
-    session.add(new_autista)
+    new_driver = Driver(**driver_data.dict())
+    session.add(new_driver)
     await session.commit()
-    await session.refresh(new_autista)
-    return new_autista
+    await session.refresh(new_driver)
+    return new_driver
 
-async def delete_autista_by_tessera(session: AsyncSession, tessera: str) -> bool:
+async def deleteDriverByCard(session: AsyncSession, card: str) -> bool:
     result = await session.execute(
-        delete(Autista).where(Autista.tessera == tessera)
+        delete(Driver).where(Driver.card == card)
     )
     await session.commit()
     return result.rowcount > 0
 
-async def update_autista(session: AsyncSession, tessera: str, autista_data):
-    autista = await get_autista_by_tessera(session, tessera)
-    if not autista:
+async def updateDriver(session: AsyncSession, card: str, driver_data):
+    driver = await getDriverByCard(session, card)
+    if not driver:
         raise HTTPException(status_code=404, detail="Autista non trovato")
     
-    # Check if new tessera already exists (if changed)
-    if autista_data.tessera != tessera:
-        existing = await get_autista_by_tessera(session, autista_data.tessera)
+    if driver_data.card != card:
+        existing = await getDriverByCard(session, driver_data.card)
         if existing:
-            raise HTTPException(status_code=400, detail="Nuova tessera già in uso")
+            raise HTTPException(status_code=400, detail="Nuova card già in uso")
     
-    # Update fields
-    for key, value in autista_data.dict().items():
-        setattr(autista, key, value)
+    for key, value in driver_data.dict().items():
+        setattr(driver, key, value)
     
     await session.commit()
-    await session.refresh(autista)
-    return autista
+    await session.refresh(driver)
+    return driver
 
-async def search_autisti(session: AsyncSession, filters: dict):
-    query = select(Autista)
+async def searchDrivers(session: AsyncSession, filters: dict):
+    query = select(Driver)
     
-    if filters.get('tessera'):
-        query = query.where(Autista.tessera.ilike(f"%{filters['tessera']}%"))
-    if filters.get('nome_compagnia'):
-        query = query.where(Autista.nome_compagnia.ilike(f"%{filters['nome_compagnia']}%"))
-    if filters.get('nome_autista'):
-        query = query.where(Autista.nome_autista.ilike(f"%{filters['nome_autista']}%"))
-    if filters.get('richiedi_pin') is not None:
-        query = query.where(Autista.richiedi_pin == filters['richiedi_pin'])
-    if filters.get('richiedi_id_veicolo') is not None:
-        query = query.where(Autista.richiedi_id_veicolo == filters['richiedi_id_veicolo'])
+    if filters.get('card'):
+        query = query.where(Driver.card.ilike(f"%{filters['card']}%"))
+    if filters.get('company'):
+        query = query.where(Driver.company.ilike(f"%{filters['company']}%"))
+    if filters.get('driver_full_name'):
+        query = query.where(Driver.driver_full_name.ilike(f"%{filters['driver_full_name']}%"))
+    if filters.get('request_pin') is not None:
+        query = query.where(Driver.request_pin == filters['request_pin'])
+    if filters.get('request_vehicle_id') is not None:
+        query = query.where(Driver.request_vehicle_id == filters['request_vehicle_id'])
     
     result = await session.execute(query)
     return result.scalars().all()

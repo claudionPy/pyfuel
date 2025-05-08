@@ -1,16 +1,16 @@
 from pydantic import BaseModel
 
-class VeicoloBase(BaseModel):
-    id_veicolo: str
-    nome_compagnia: str
-    richiedi_km_veicolo: bool
-    km_totali_veicolo: str
-    targa: str
+class VehicleBase(BaseModel):
+    vehicle_id: str
+    company_vehicle: str
+    request_vehicle_km: bool
+    vehicle_total_km: str
+    plate: str
 
-class VeicoloCreate(VeicoloBase):
+class VehicleCreate(VehicleBase):
     pass
 
-class Veicolo(VeicoloBase):
+class Vehicle(VehicleBase):
     class Config:
         from_attributes = True
 

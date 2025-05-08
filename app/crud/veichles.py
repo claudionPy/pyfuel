@@ -1,80 +1,77 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from app.models.veichles import Veicolo
+from app.models.veichles import Vehicle
 
-async def get_veicoli_all(session: AsyncSession):
-    result = await session.execute(select(Veicolo))
-    return result.scalars().all()
+"""async def getAllVehicles(session: AsyncSession):
+    result = await session.execute(select(Vehicle))
+    return result.scalars().all()"""
 
-async def get_veicolo_by_id(session: AsyncSession, id_veicolo: str):
-    result = await session.execute(select(Veicolo).filter(Veicolo.id_veicolo == id_veicolo))
+async def getVehicleById(session: AsyncSession, vehicle_id: str):
+    result = await session.execute(select(Vehicle).filter(Vehicle.vehicle_id == vehicle_id))
     return result.scalars().first()
 
-async def get_veicolo_by_targa(session: AsyncSession, targa: str):
-    result = await session.execute(select(Veicolo).filter(Veicolo.targa == targa))
+async def getVehicleByPlate(session: AsyncSession, plate: str):
+    result = await session.execute(select(Vehicle).filter(Vehicle.plate == plate))
     return result.scalars().first()
 
-async def create_veicolo(session: AsyncSession, veicolo_data):
-    existing_by_id = await get_veicolo_by_id(session, veicolo_data.id_veicolo)
+async def createVehicle(session: AsyncSession, vehicle_data):
+    existing_by_id = await getVehicleById(session, vehicle_data.vehicle_id)
     if existing_by_id:
         raise HTTPException(status_code=400, detail="Veicolo con questo ID già presente")
     
-    existing_by_targa = await get_veicolo_by_targa(session, veicolo_data.targa)
-    if existing_by_targa:
-        raise HTTPException(status_code=400, detail="Veicolo con questa targa già presente")
+    existing_by_plate = await getVehicleByPlate(session, vehicle_data.plate)
+    if existing_by_plate:
+        raise HTTPException(status_code=400, detail="Veicolo con questa plate già presente")
     
-    new_veicolo = Veicolo(**veicolo_data.dict())
-    session.add(new_veicolo)
+    new_vehicle = Vehicle(**vehicle_data.dict())
+    session.add(new_vehicle)
     await session.commit()
-    await session.refresh(new_veicolo)
-    return new_veicolo
+    await session.refresh(new_vehicle)
+    return new_vehicle
 
-async def delete_veicolo_by_id(session: AsyncSession, id_veicolo: str) -> bool:
+async def deleteVehicleById(session: AsyncSession, vehicle_id: str) -> bool:
     result = await session.execute(
-        delete(Veicolo).where(Veicolo.id_veicolo == id_veicolo)
+        delete(Vehicle).where(Vehicle.vehicle_id == vehicle_id)
     )
     await session.commit()
     return result.rowcount > 0
 
-async def update_veicolo(session: AsyncSession, id_veicolo: str, veicolo_data):
-    veicolo = await get_veicolo_by_id(session, id_veicolo)
-    if not veicolo:
+async def updateVehicle(session: AsyncSession, vehicle_id: str, vehicle_data):
+    vehicle = await getVehicleById(session, vehicle_id)
+    if not vehicle:
         raise HTTPException(status_code=404, detail="Veicolo non trovato")
     
-    # Check if new ID already exists (if changed)
-    if veicolo_data.id_veicolo != id_veicolo:
-        existing = await get_veicolo_by_id(session, veicolo_data.id_veicolo)
+    if vehicle_data.vehicle_id != vehicle_id:
+        existing = await getVehicleById(session, vehicle_data.vehicle_id)
         if existing:
             raise HTTPException(status_code=400, detail="Nuovo ID veicolo già in uso")
     
-    # Check if new plate already exists (if changed)
-    if veicolo_data.targa != veicolo.targa:
-        existing = await get_veicolo_by_targa(session, veicolo_data.targa)
+    if vehicle_data.plate != vehicle.plate:
+        existing = await getVehicleByPlate(session, vehicle_data.plate)
         if existing:
-            raise HTTPException(status_code=400, detail="Nuova targa già in uso")
+            raise HTTPException(status_code=400, detail="Nuova plate già in uso")
     
-    # Update fields
-    for key, value in veicolo_data.dict().items():
-        setattr(veicolo, key, value)
+    for key, value in vehicle_data.dict().items():
+        setattr(vehicle, key, value)
     
     await session.commit()
-    await session.refresh(veicolo)
-    return veicolo
+    await session.refresh(vehicle)
+    return vehicle
     
-async def search_veicoli(session: AsyncSession, filters: dict):
-    query = select(Veicolo)
+async def searchVehicles(session: AsyncSession, filters: dict):
+    query = select(Vehicle)
     
-    if filters.get('id_veicolo'):
-        query = query.where(Veicolo.id_veicolo.ilike(f"%{filters['id_veicolo']}%"))
-    if filters.get('nome_compagnia'):
-        query = query.where(Veicolo.nome_compagnia.ilike(f"%{filters['nome_compagnia']}%"))
-    if filters.get('km_totali_veicolo'):
-        query = query.where(Veicolo.km_totali_veicolo == filters['km_totali_veicolo'])
-    if filters.get('targa'):
-        query = query.where(Veicolo.targa.ilike(f"%{filters['targa']}%"))
-    if filters.get('richiedi_km_veicolo'):
-        query = query.where(Veicolo.richiedi_km_veicolo == filters['richiedi_km_veicolo'])
+    if filters.get('vehicle_id'):
+        query = query.where(Vehicle.vehicle_id.ilike(f"%{filters['vehicle_id']}%"))
+    if filters.get('company_vehicle'):
+        query = query.where(Vehicle.company_vehicle.ilike(f"%{filters['company_vehicle']}%"))
+    if filters.get('vehicle_total_km'):
+        query = query.where(Vehicle.vehicle_total_km == filters['vehicle_total_km'])
+    if filters.get('plate'):
+        query = query.where(Vehicle.plate.ilike(f"%{filters['plate']}%"))
+    if filters.get('request_vehicle_km'):
+        query = query.where(Vehicle.request_vehicle_km == filters['request_vehicle_km'])
     
     result = await session.execute(query)
     return result.scalars().all()

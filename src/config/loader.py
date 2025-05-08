@@ -3,8 +3,8 @@ import logging
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, Any
-from dataclasses import asdict, is_dataclass
-from src.config.params import FuelParameters, GuiParameters, MainParameters, FuelSides, GuiSides
+from dataclasses import asdict
+from src.config.params import FuelParameters, GuiParameters, MainParameters
 
 class ConfigManager:
     def __init__(self, config_path: str = "src/config/config.json"):
@@ -13,17 +13,16 @@ class ConfigManager:
         self.current_config = None
         
     def _create_default_config(self) -> Dict[str, Any]:
-        """Create a default configuration dictionary"""
         return {
             "fuel_sides": {
-                "side_1": asdict(FuelParameters(sideExists=True)),
-                "side_2": asdict(FuelParameters(sideExists=True)),
+                "side_1": asdict(FuelParameters(side_exists=True)),
+                "side_2": asdict(FuelParameters(side_exists=True)),
                 "side_3": asdict(FuelParameters()),
                 "side_4": asdict(FuelParameters())
             },
             "gui_sides": {
-                "side_1": asdict(GuiParameters(sideExists=True)),
-                "side_2": asdict(GuiParameters(sideExists=True)),
+                "side_1": asdict(GuiParameters(side_exists=True)),
+                "side_2": asdict(GuiParameters(side_exists=True)),
                 "side_3": asdict(GuiParameters()),
                 "side_4": asdict(GuiParameters())
             },
@@ -31,7 +30,6 @@ class ConfigManager:
         }
     
     def load_config(self) -> Dict[str, Any]:
-        """Load configuration from file or create default if not exists"""
         try:
             if not self.config_path.exists():
                 logging.warning("Config file not found, creating default")
@@ -51,7 +49,6 @@ class ConfigManager:
             return self.default_config
     
     def save_config(self, config: Dict[str, Any]) -> bool:
-        """Save configuration to file"""
         try:
             with open(self.config_path, 'w') as f:
                 json.dump(config, f, indent=4)
@@ -61,7 +58,6 @@ class ConfigManager:
             return False
     
     def _merge_with_defaults(self, custom_config: Dict[str, Any]) -> Dict[str, Any]:
-        """Merge custom config with defaults in modo sicuro."""
         merged = deepcopy(self.default_config)
 
         for section, default_val in merged.items():
@@ -69,40 +65,33 @@ class ConfigManager:
                 continue
 
             custom_val = custom_config[section]
-            # se è un dict di dict (fuel_sides, gui_sides)
             if isinstance(default_val, dict) and all(isinstance(v, dict) for v in default_val.values()):
                 for key, val in custom_val.items():
                     if isinstance(val, dict):
-                        merged[section].setdefault(key, {})  # crea se manca
+                        merged[section].setdefault(key, {})
                         merged[section][key].update(val)
                     else:
-                        # se trovassi un valore non‐dict qui, lo sovrascrivo
                         merged[section][key] = val
-            # altrimenti è un dict “piatto” (main_parameters)
             elif isinstance(default_val, dict) and isinstance(custom_val, dict):
                 merged[section].update(custom_val)
             else:
-                # nel caso salti fuori qualcosa di diverso
                 merged[section] = custom_val
 
         return merged
     
     def get_fuel_parameters(self, side: int) -> FuelParameters:
-        """Get fuel parameters for a specific side"""
         side_key = f"side_{side}"
         if self.current_config and side_key in self.current_config["fuel_sides"]:
             return FuelParameters(**self.current_config["fuel_sides"][side_key])
         return FuelParameters()
     
     def get_gui_parameters(self, side: int) -> GuiParameters:
-        """Get GUI parameters for a specific side"""
         side_key = f"side_{side}"
         if self.current_config and side_key in self.current_config["gui_sides"]:
             return GuiParameters(**self.current_config["gui_sides"][side_key])
         return GuiParameters()
     
     def get_main_parameters(self) -> MainParameters:
-        """Get main parameters"""
         if self.current_config and "main_parameters" in self.current_config:
             return MainParameters(**self.current_config["main_parameters"])
         return MainParameters()
