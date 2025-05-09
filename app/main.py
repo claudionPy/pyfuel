@@ -3,22 +3,26 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.api.routes import router as api_router
+import app.models.totals
 
-app = FastAPI(title="db communication api")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
 
+app = FastAPI(
+    title="pyfuel API",
+    description="pyfuel API for managing drivers, vehicles, erogations, parameters and more",
+    lifespan=lifespan
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],      # o origins se vuoi limitarli
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Eventi di avvio e spegnimento
-@asynccontextmanager
-async def lifespan():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
 app.include_router(api_router)

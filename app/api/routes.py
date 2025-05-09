@@ -6,110 +6,107 @@ from datetime import datetime
 
 from app.database import get_session
 from app.schemas import (
-    drivers as autisti_schemas,
-    veichles as veicoli_schemas,
-    erogations as erogazioni_schemas,
+    drivers as drivers_schemas,
+    veichles as vehicles_schemas,
+    erogations as erogations_schemas,
 )
 from app.schemas.pagination import Paginated
 from app.crud import (
-    drivers as autisti_crud,
-    veichles as veicoli_crud,
-    erogations as erogazioni_crud,
+    drivers as drivers_crud,
+    veichles as vehicles_crud,
+    erogations as erogations_crud,
 )
-from app.models.drivers import Autista
-from app.models.veichles import Veicolo
-from app.models.erogations import Erogazione
+from app.models.drivers import Driver
+from app.models.veichles import Vehicle
+from app.models.erogations import Erogation
 from src.config.loader import ConfigManager
 from app.schemas.config import FullConfigSchema
 
 router = APIRouter()
 cfg_mgr = ConfigManager(config_path="src/config/config.json")
 
-# ——— AUTISTI ———
-
-@router.post("/autisti/", response_model=autisti_schemas.Autista)
-async def create_autista(
-    autista: autisti_schemas.AutistaCreate,
+@router.post("/drivers/", response_model=drivers_schemas.Driver)
+async def createDriver(
+    driver: drivers_schemas.DriverCreate,
     session: AsyncSession = Depends(get_session),
 ):
-    return await autisti_crud.create_autista(session, autista)
+    return await drivers_crud.createDriver(session, driver)
 
 @router.get(
-    "/autisti/",
-    response_model=Paginated[autisti_schemas.Autista],
+    "/drivers/",
+    response_model=Paginated[drivers_schemas.Driver],
 )
-async def list_autisti(
+async def listDrivers(
     page: int = Query(1, ge=1),
     limit: int = Query(25, ge=1, le=100),
     session: AsyncSession = Depends(get_session),
 ):
     skip = (page - 1) * limit
-    total = await session.scalar(select(func.count()).select_from(Autista))
+    total = await session.scalar(select(func.count()).select_from(Driver))
     result = await session.execute(
-        select(Autista).offset(skip).limit(limit)
+        select(Driver).offset(skip).limit(limit)
     )
     items = result.scalars().all()
     return Paginated(total=total, page=page, limit=limit, items=items)
 
-@router.get("/autisti/{tessera}", response_model=autisti_schemas.Autista)
-async def get_autista_by_tessera(
-    tessera: str,
+@router.get("/drivers/{card}", response_model=drivers_schemas.Driver)
+async def getDriverByCard(
+    card: str,
     session: AsyncSession = Depends(get_session),
 ):
-    autista = await autisti_crud.get_autista(session, tessera)
-    if not autista:
-        raise HTTPException(status_code=404, detail="Autista non trovato")
-    return autista
+    driver = await drivers_crud.getDriverByCard(session, card)
+    if not driver:
+        raise HTTPException(status_code=404, detail="Driver not found")
+    return driver
 
-@router.put("/autisti/{tessera}", response_model=autisti_schemas.Autista)
-async def update_autista(
-    tessera: str,
-    autista: autisti_schemas.Autista,
+@router.put("/drivers/{card}", response_model=drivers_schemas.Driver)
+async def updateDriver(
+    card: str,
+    driver: drivers_schemas.Driver,
     session: AsyncSession = Depends(get_session),
 ):
-    return await autisti_crud.update_autista(session, tessera, autista)
+    return await drivers_crud.updateDriver(session, card, driver)
 
 @router.delete(
-    "/autisti/{tessera}",
+    "/drivers/{card}",
     status_code=status.HTTP_204_NO_CONTENT,
     response_model=None,
-    responses={404: {"description": "Autista non trovato"}},
+    responses={404: {"description": "Driver not found"}},
 )
-async def delete_driver(
-    tessera: str,
-    session: AsyncSession = Depends(get_session),
-) -> None:
-    deleted = await autisti_crud.delete_autista_by_tessera(session, tessera)
+async def deleteDriver(
+    card: str,
+    session: AsyncSession = Depends(get_session)) -> None:
+    deleted = await drivers_crud.deleteDriverByCard(session, card)
     if not deleted:
-        raise HTTPException(status_code=404, detail="Autista non trovato")
+        raise HTTPException(status_code=404, detail="Driver not found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get(
-    "/autisti/search/",
-    response_model=Paginated[autisti_schemas.Autista],
+    "/drivers/search/",
+    response_model=Paginated[drivers_schemas.Driver],
 )
-async def search_autisti(
-    tessera: Optional[str] = Query(None),
-    nome_compagnia: Optional[str] = Query(None),
-    nome_autista: Optional[str] = Query(None),
-    richiedi_pin: Optional[bool] = Query(None),
-    richiedi_id_veicolo: Optional[bool] = Query(None),
+async def searchDrivers(
+    card: Optional[str] = Query(None),
+    company: Optional[str] = Query(None),
+    driver_full_name: Optional[str] = Query(None),
+    request_pin: Optional[bool] = Query(None),
+    request_vehicle_id: Optional[bool] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(25, ge=1, le=100),
     session: AsyncSession = Depends(get_session),
 ):
     filters = {
-        "tessera": tessera,
-        "nome_compagnia": nome_compagnia,
-        "nome_autista": nome_autista,
-        "richiedi_pin": richiedi_pin,
-        "richiedi_id_veicolo": richiedi_id_veicolo,
+        "card": card,
+        "company": company,
+        "driver_full_name": driver_full_name,
+        "request_pin": request_pin,
+        "request_vehicle_id": request_vehicle_id,
     }
-    query = select(Autista)
+    query = select(Driver)
     for attr, val in filters.items():
         if val is None:
             continue
-        column = getattr(Autista, attr)
+        column = getattr(Driver, attr)
         if isinstance(val, bool):
             query = query.where(column == val)
         else:
@@ -121,100 +118,97 @@ async def search_autisti(
     items = result.scalars().all()
     return Paginated(total=total, page=page, limit=limit, items=items)
 
-
-# ——— VEICOLI ———
-
-@router.post("/veicoli/", response_model=veicoli_schemas.Veicolo)
-async def create_veicolo(
-    veicolo: veicoli_schemas.VeicoloCreate,
+@router.post("/vehicles/", response_model=vehicles_schemas.Vehicle)
+async def createVehicle(
+    vehicle: vehicles_schemas.VehicleCreate,
     session: AsyncSession = Depends(get_session),
 ):
-    return await veicoli_crud.create_veicolo(session, veicolo)
+    return await vehicles_crud.createVehicle(session, vehicle)
 
 @router.get(
-    "/veicoli/",
-    response_model=Paginated[veicoli_schemas.Veicolo],
+    "/vehicles/",
+    response_model=Paginated[vehicles_schemas.Vehicle],
 )
-async def list_veicoli(
+async def listVehicles(
     page: int = Query(1, ge=1),
     limit: int = Query(25, ge=1, le=100),
     session: AsyncSession = Depends(get_session),
 ):
     skip = (page - 1) * limit
-    total = await session.scalar(select(func.count()).select_from(Veicolo))
-    result = await session.execute(select(Veicolo).offset(skip).limit(limit))
+    total = await session.scalar(select(func.count()).select_from(Vehicle))
+    result = await session.execute(select(Vehicle).offset(skip).limit(limit))
     items = result.scalars().all()
     return Paginated(total=total, page=page, limit=limit, items=items)
 
-@router.get("/veicoli/{id_veicolo}", response_model=veicoli_schemas.Veicolo)
-async def get_veicolo(
-    id_veicolo: str,
+@router.get("/vehicles/{vehicle_id}", response_model=vehicles_schemas.Vehicle)
+async def getVehicleById(
+    vehicle_id: str,
     session: AsyncSession = Depends(get_session),
 ):
-    veicolo = await veicoli_crud.get_veicolo_by_id(session, id_veicolo)
-    if not veicolo:
-        raise HTTPException(status_code=404, detail="Veicolo non trovato")
-    return veicolo
+    vehicle = await vehicles_crud.getVehicleById(session, vehicle_id)
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    return vehicle
 
-@router.get("/veicoli/targa/{targa}", response_model=veicoli_schemas.Veicolo)
-async def get_veicolo_by_targa(
-    targa: str,
+@router.get("/vehicles/plate/{plate}", response_model=vehicles_schemas.Vehicle)
+async def getVehicleByPlate(
+    plate: str,
     session: AsyncSession = Depends(get_session),
 ):
-    veicolo = await veicoli_crud.get_veicolo_by_targa(session, targa)
-    if not veicolo:
-        raise HTTPException(status_code=404, detail="Veicolo non trovato")
-    return veicolo
+    vehicle = await vehicles_crud.getVehicleByPlate(session, plate)
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    return vehicle
 
-@router.put("/veicoli/{id_veicolo}", response_model=veicoli_schemas.Veicolo)
-async def update_veicolo(
-    id_veicolo: str,
-    veicolo: veicoli_schemas.Veicolo,
+@router.put("/vehicles/{vehicle_id}", response_model=vehicles_schemas.Vehicle)
+async def updateVehicle(
+    vehicle_id: str,
+    vehicle: vehicles_schemas.Vehicle,
     session: AsyncSession = Depends(get_session),
 ):
-    return await veicoli_crud.update_veicolo(session, id_veicolo, veicolo)
+    return await vehicles_crud.updateVehicle(session, vehicle_id, vehicle)
 
 @router.delete(
-    "/veicoli/{id_veicolo}",
+    "/vehicles/{vehicle_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     response_model=None,
-    responses={404: {"description": "Veicolo non trovato"}},
+    responses={404: {"description": "Vehicle not found"}},
 )
-async def delete_vehicle(
-    id_veicolo: str,
+async def deleteVehicle(
+    vehicle_id: str,
     session: AsyncSession = Depends(get_session),
 ) -> None:
-    deleted = await veicoli_crud.delete_veicolo_by_id(session, id_veicolo)
+    deleted = await vehicles_crud.deleteVehicleById(session, vehicle_id)
     if not deleted:
-        raise HTTPException(status_code=404, detail="Veicolo non trovato")
+        raise HTTPException(status_code=404, detail="Vehicle not found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get(
-    "/veicoli/search/",
-    response_model=Paginated[veicoli_schemas.Veicolo],
+    "/vehicles/search/",
+    response_model=Paginated[vehicles_schemas.Vehicle],
 )
-async def search_veicoli(
-    id_veicolo: Optional[str] = Query(None),
-    nome_compagnia: Optional[str] = Query(None),
-    km_totali_veicolo: Optional[str] = Query(None),
-    targa: Optional[str] = Query(None),
-    richiedi_km_veicolo: Optional[bool] = Query(None),
+async def searchVehicles(
+    vehicle_id: Optional[str] = Query(None),
+    company: Optional[str] = Query(None),
+    vehicle_total_km: Optional[str] = Query(None),
+    plate: Optional[str] = Query(None),
+    request_vehicle_km: Optional[bool] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(25, ge=1, le=100),
     session: AsyncSession = Depends(get_session),
 ):
     filters = {
-        "id_veicolo": id_veicolo,
-        "nome_compagnia": nome_compagnia,
-        "km_totali_veicolo": km_totali_veicolo,
-        "targa": targa,
-        "richiedi_km_veicolo": richiedi_km_veicolo,
+        "vehicle_id": vehicle_id,
+        "company": company,
+        "vehicle_total_km": vehicle_total_km,
+        "plate": plate,
+        "request_vehicle_km": request_vehicle_km,
     }
-    query = select(Veicolo)
+    query = select(Vehicle)
     for attr, val in filters.items():
         if val is None:
             continue
-        column = getattr(Veicolo, attr)
+        column = getattr(Vehicle, attr)
         if isinstance(val, (bool, int, float)):
             query = query.where(column == val)
         else:
@@ -225,30 +219,27 @@ async def search_veicoli(
     items = result.scalars().all()
     return Paginated(total=total, page=page, limit=limit, items=items)
 
-
-# ——— EROGAZIONI ———
-
-@router.post("/erogazioni/", response_model=erogazioni_schemas.Erogazione)
-async def create_erogazione(
-    erogazione: erogazioni_schemas.ErogazioneCreate,
+@router.post("/erogations/", response_model=erogations_schemas.Erogation)
+async def createErogation(
+    erogation: erogations_schemas.ErogationCreate,
     session: AsyncSession = Depends(get_session),
 ):
-    return await erogazioni_crud.create_erogazione(session, erogazione)
+    return await erogations_crud.createErogation(session, erogation)
 
 @router.get(
-    "/erogazioni/",
-    response_model=Paginated[erogazioni_schemas.Erogazione],
+    "/erogations/",
+    response_model=Paginated[erogations_schemas.Erogation],
 )
-async def list_erogazioni(
+async def listErogations(
     page: int = Query(1, ge=1),
     limit: int = Query(25, ge=1, le=100),
     session: AsyncSession = Depends(get_session),
 ):
     skip = (page - 1) * limit
-    total = await session.scalar(select(func.count()).select_from(Erogazione))
+    total = await session.scalar(select(func.count()).select_from(Erogation))
     stmt = (
-        select(Erogazione)
-        .order_by(Erogazione.timestamp_erogazione.desc())
+        select(Erogation)
+        .order_by(Erogation.erogation_timestamp.desc())
         .offset(skip)
         .limit(limit)
     )
@@ -257,63 +248,59 @@ async def list_erogazioni(
     return Paginated(total=total, page=page, limit=limit, items=items)
 
 @router.get(
-    "/erogazioni/search/",
-    response_model=Paginated[erogazioni_schemas.Erogazione],
+    "/erogations/search/",
+    response_model=Paginated[erogations_schemas.Erogation],
 )
-async def search_erogazioni(
-    tessera: Optional[str]            = Query(None),
-    id_veicolo: Optional[int]         = Query(None),
-    nome_compagnia: Optional[str]     = Query(None),
-    lato_erogazione: Optional[int]    = Query(None),
-    modalita_erogazione: Optional[str]= Query(None),
-    prodotto_erogato: Optional[str]   = Query(None),
-    km_totali_veicolo: Optional[str]  = Query(None),
-    litri_erogati: Optional[float]    = Query(None),
-    start_time: Optional[datetime]    = Query(
+async def searchErogazioni(
+    card: Optional[str] = Query(None),
+    vehicle_id: Optional[str] = Query(None),
+    company: Optional[str] = Query(None),
+    erogation_side: Optional[int] = Query(None),
+    mode: Optional[str] = Query(None),
+    dispensed_product: Optional[str] = Query(None),
+    vehicle_total_km: Optional[str] = Query(None),
+    dispensed_liters: Optional[float] = Query(None),
+    start_time: Optional[datetime] = Query(
         None,
         alias="start_time",
         description="Start time in ISO-8601 format, e.g. 2025-04-26T10:50"
     ),
-    end_time: Optional[datetime]      = Query(
+    end_time: Optional[datetime] = Query(
         None,
         alias="end_time",
         description="End time in ISO-8601 format, e.g. 2025-04-26T10:52"
     ),
-    page: int                         = Query(1, ge=1),
-    limit: int                        = Query(25, ge=1, le=100),
-    session: AsyncSession             = Depends(get_session),
+    page: int = Query(1, ge=1),
+    limit: int = Query(25, ge=1, le=100),
+    session: AsyncSession = Depends(get_session),
 ):
-    # Build the base query
-    query = select(Erogazione)
+    query = select(Erogation)
 
-    # Apply simple filters
     filters = {
-        "tessera": tessera,
-        "id_veicolo": id_veicolo,
-        "nome_compagnia": nome_compagnia,
-        "lato_erogazione": lato_erogazione,
-        "modalita_erogazione": modalita_erogazione,
-        "prodotto_erogato": prodotto_erogato,
-        "km_totali_veicolo": km_totali_veicolo,
-        "litri_erogati": litri_erogati,
+        "card": card,
+        "vehicle_id": vehicle_id,
+        "company": company,
+        "erogation_side": erogation_side,
+        "mode": mode,
+        "dispensed_product": dispensed_product,
+        "vehicle_total_km": vehicle_total_km,
+        "dispensed_liters": dispensed_liters,
     }
     for attr, val in filters.items():
         if val is None:
             continue
-        column = getattr(Erogazione, attr)
+        column = getattr(Erogation, attr)
         if isinstance(val, (int, float)):
             query = query.where(column == val)
         else:
             query = query.where(column.ilike(f"%{val}%"))
 
-    # Apply datetime filters (now true datetime objects)
     if start_time:
-        query = query.where(Erogazione.timestamp_erogazione >= start_time)
+        query = query.where(Erogation.erogation_timestamp >= start_time)
     if end_time:
-        query = query.where(Erogazione.timestamp_erogazione <= end_time)
+        query = query.where(Erogation.erogation_timestamp <= end_time)
 
-    # Order and paginate
-    query = query.order_by(Erogazione.timestamp_erogazione.desc())
+    query = query.order_by(Erogation.erogation_timestamp.desc())
     total = await session.scalar(select(func.count()).select_from(query.subquery()))
     skip = (page - 1) * limit
     stmt = query.offset(skip).limit(limit)
@@ -323,42 +310,34 @@ async def search_erogazioni(
     return Paginated(total=total, page=page, limit=limit, items=items)
 
 @router.delete(
-    "/erogazioni/",
+    "/erogations/",
     status_code=status.HTTP_204_NO_CONTENT,
     response_model=None,
-    responses={404: {"description": "Nessuna erogazione trovata"}},
+    responses={404: {"description": "No erogations found"}},
 )
-async def delete_erogations(
+async def deleteErogations(
     session: AsyncSession = Depends(get_session),
 ) -> None:
-    deleted = await erogazioni_crud.delete_erogazioni(session)
+    deleted = await erogations_crud.deleteErogations(session)
     if not deleted:
-        raise HTTPException(status_code=404, detail="Nessuna erogazione trovata")
+        raise HTTPException(status_code=404, detail="No erogations found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get("/parameters/", response_model=FullConfigSchema)
-def read_parameters():
-    """
-    Legge il file JSON (merge con default se mancante) e lo restituisce.
-    """
+def readParameters():
     return cfg_mgr.load_config()
 
 @router.put("/parameters/", response_model=FullConfigSchema)
-def update_parameters(new_cfg: FullConfigSchema):
-    """
-    Sovrascrive il file JSON con la configurazione inviata.
-    """
-    saved = cfg_mgr.save_config(new_cfg.dict())
-    if not saved:
-        # potete lanciare HTTPException(500) se preferite
-        return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+def updateParameters(new_cfg: FullConfigSchema):
+    if not cfg_mgr.save_config(new_cfg.model_dump()):
+        # raise, don’t return a bare Response
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save configuration"
+        )
     return cfg_mgr.current_config
 
 @router.post("/parameters/reset", status_code=status.HTTP_204_NO_CONTENT)
-def reset_parameters():
-    """
-    Ripristina i valori di default e salva sul file.
-    """
-    # save_config accetta un dict identico a default_config
+def resetParameters():
     cfg_mgr.save_config(cfg_mgr.default_config)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
