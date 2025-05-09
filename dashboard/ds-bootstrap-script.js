@@ -1127,7 +1127,7 @@ class Dashboard {
 
     // Visualizza i parametri carburante
     static renderFuelParameters(sides) {
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 2; i++) {
             const sideKey = `side_${i}`;
             const container = document.getElementById(`fuel-side-${i}-params`);
             if (!container) continue;
@@ -1247,7 +1247,7 @@ class Dashboard {
 
     // Visualizza i parametri GUI
     static renderGuiParameters(sides) {
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 2; i++) {
             const sideKey = `side_${i}`;
             const container = document.getElementById(`gui-side-${i}-params`);
             if (!container) continue;
@@ -1435,7 +1435,7 @@ class Dashboard {
             const parameters = { fuel_sides: {}, gui_sides: {}, main_parameters: {} };
 
             // Lati carburante
-            for (let i = 1; i <= 4; i++) {
+            for (let i = 1; i <= 2; i++) {
                 const p = `fuel-${i}-`;
                 parameters.fuel_sides[`side_${i}`] = {
                     side_exists: safeGetChecked(`${p}enabled`),
@@ -1455,7 +1455,7 @@ class Dashboard {
             }
 
             // Lati GUI
-            for (let i = 1; i <= 4; i++) {
+            for (let i = 1; i <= 2; i++) {
                 const p = `gui-${i}-`;
                 parameters.gui_sides[`side_${i}`] = {
                     side_exists: safeGetChecked(`${p}enabled`),
@@ -1675,44 +1675,28 @@ class Dashboard {
             const response = await fetch(url, options);
 
             if (!response.ok) {
-                let errorData;
-                const contentType = response.headers.get('content-type');
-
-                try {
-                    errorData = contentType?.includes('application/json')
-                        ? await response.json()
-                        : await response.text();
-                } catch (e) {
-                    errorData = await response.text();
-                }
-
-                const error = new Error(`Errore HTTP! stato: ${response.status}`);
-                error.response = {
-                    status: response.status,
-                    data: errorData
-                };
-                throw error;
+                // Gestione errori esistente
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return await response.json();
+            // Se il server non ha inviato contenuto, non tentare il JSON.parse
+            const contentLength = response.headers.get('content-length');
+            if (response.status === 204 || contentLength === '0') {
+                return null;
+            }
+
+            try {
+                return await response.json();
+            } catch (e) {
+                // Corpo non JSON: restituisco il testo grezzo
+                return await response.text();
+            }
         } catch (error) {
-            // Non ritentare per questi casi
-            const noRetryConditions = [
-                options.method === 'DELETE',
-                error.message.includes('404'),
-                error.message.includes('422'),
-                error.message.includes('Network Error')
-            ];
-
-            if (noRetryConditions.some(cond => cond)) {
+            if (retries > 0) {
+                return await fetchWithRetry(url, options, retries - 1);
+            } else {
                 throw error;
             }
-
-            if (retries > 0) {
-                await new Promise(res => setTimeout(res, 1000));
-                return this.fetchWithRetry(url, options, retries - 1);
-            }
-            throw error;
         }
     }
 

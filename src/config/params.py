@@ -8,13 +8,13 @@ class FuelParameters:
     nozzle_pin: int = 5
     relay_pin: int = 17
     pulses_per_liter: int = 100
-    price: float = 1.000
-    product: str = "Gasolio"
+    price: float = 0.001
+    product: str = "Default"
     automatic_mode: bool = False
     relay_activation_timer: int = 3
     reverse_nozzle_polarity: bool = True
     timeout_reached_without_dispensing: int = 60
-    calibration_factor: float = 0.94
+    calibration_factor: float = 1
     simulation_pulser: bool = False
 
 @dataclass
@@ -31,10 +31,10 @@ class GuiParameters:
     busy_button_border_color: str = "#8D0000"
     available_button_color: str = "#FF8C00"
     available_button_border_color: str = "#DAA520"
-    button_border_width: int = 15
-    button_corner_radius: int = 200
-    button_relx: float = None
-    button_rely: float = None
+    button_border_width: int = 10
+    button_corner_radius: int = 100
+    button_relx: float = 0.13
+    button_rely: float = 0.2
     preset_label: str = "L: "
 
 @dataclass
@@ -50,12 +50,8 @@ class MainParameters:
 class FuelSides:
     side_1: FuelParameters
     side_2: FuelParameters
-    side_3: FuelParameters
-    side_4: FuelParameters
 
 @dataclass
 class GuiSides:
     side_1: GuiParameters
     side_2: GuiParameters
-    side_3: GuiParameters
-    side_4: GuiParameters

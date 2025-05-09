@@ -16,15 +16,11 @@ class ConfigManager:
         return {
             "fuel_sides": {
                 "side_1": asdict(FuelParameters(side_exists=True)),
-                "side_2": asdict(FuelParameters(side_exists=True)),
-                "side_3": asdict(FuelParameters()),
-                "side_4": asdict(FuelParameters())
+                "side_2": asdict(FuelParameters(side_exists=False))
             },
             "gui_sides": {
                 "side_1": asdict(GuiParameters(side_exists=True)),
-                "side_2": asdict(GuiParameters(side_exists=True)),
-                "side_3": asdict(GuiParameters()),
-                "side_4": asdict(GuiParameters())
+                "side_2": asdict(GuiParameters(side_exists=False))
             },
             "main_parameters": asdict(MainParameters())
         }

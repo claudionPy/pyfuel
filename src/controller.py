@@ -22,16 +22,12 @@ class Controller:
         # Initialize parameters from config
         self.fuel_sides = FuelSides(
             side_1=self.config_manager.get_fuel_parameters(1),
-            side_2=self.config_manager.get_fuel_parameters(2),
-            side_3=self.config_manager.get_fuel_parameters(3),
-            side_4=self.config_manager.get_fuel_parameters(4)
+            side_2=self.config_manager.get_fuel_parameters(2)
         )
 
         self.gui_sides = GuiSides(
             side_1=self.config_manager.get_gui_parameters(1),
-            side_2=self.config_manager.get_gui_parameters(2),
-            side_3=self.config_manager.get_gui_parameters(3),
-            side_4=self.config_manager.get_gui_parameters(4)
+            side_2=self.config_manager.get_gui_parameters(2)
         )
 
         self.params = self.config_manager.get_main_parameters()
@@ -52,7 +48,7 @@ class Controller:
         self.createSides()
 
     def createSides(self):
-        for i in range(1, 5):
+        for i in range(1, 3):
             fuel_side = getattr(self.fuel_sides, f"side_{i}")
             gui_side = getattr(self.gui_sides, f"side_{i}")
 
