@@ -19,7 +19,6 @@ class Controller:
         self.config_manager = ConfigManager()
         config = self.config_manager.load_config()
         
-        # Initialize parameters from config
         self.fuel_sides = FuelSides(
             side_1=self.config_manager.get_fuel_parameters(1),
             side_2=self.config_manager.get_fuel_parameters(2)
@@ -36,10 +35,8 @@ class Controller:
         self.validated_drivers = {}
         self.validated_vehicles = {}
         self.view = MainWindow(self)
-
-        # Non usiamo più una lista statica di tessere
         self.card_validated = False
-        self._temp_validated_driver = None 
+        self._temp_validated_driver = None
         self._temp_validated_vehicle = None
         self.side_selected = None
         self.selection_timeout_task = None
@@ -62,7 +59,7 @@ class Controller:
                     gui_obj.guiparams.button_border_color = gui_obj.guiparams.automatic_button_border_color
                     gui_obj.updateButtonColor(gui_obj.guiparams.button_color, gui_obj.guiparams.button_border_color)
                     self.view.after(0, self.view.updateLabel, self.params.automatic_mode_text)
-
+ 
                 gui_obj.button.configure(state="disabled")
 
     async def cancelTasks(self):
@@ -75,59 +72,53 @@ class Controller:
         while True:
             memory_usage = psutil.Process().memory_info().rss / 1024 / 1024
             task_count = len(asyncio.all_tasks())
-            logging.info(f"[RESOURCES]: Utilizzo memoria: {memory_usage:.2f} MB, Task attivi: {task_count}")
+            logging.info(f"[RESOURCES]: Memory usage: {memory_usage:.2f} MB, active tasks: {task_count}") 
             await asyncio.sleep(60)
 
     def rfidResponse(self, card_id):
         if self.card_validated:
-            logging.info("[INFO]: card già validata; seleziona un lato.")
+            logging.info("[INFO]: Card already validated, skipping validation.")
             return
         
         if not any(side.automatic_mode for side in vars(self.fuel_sides).values()):
-            logging.info("[INFO]: Tutti i lati in modalità manuale; validazione RFID disattivata.")
+            logging.info("[INFO]: All sides in manual mode, skipping card validation.")
             return
 
         if all(pump_obj.authorized or pump_obj.nozzle_status or not pump_obj.params.automatic_mode for _, pump_obj in self.sides.values()):
-            logging.info("[INFO]: Tutti i lati occupati; validazione card saltata.")
+            logging.info("[INFO]: All sides occupied, skipping card validation.")
             self.view.updateLabel("TUTTI I LATI SELEZIONATI, ATTENDI")
             self.view.after(3000, self.view.updateLabel, self.params.automatic_mode_text)
             return
 
-        # Avvia il task per validare la card dal DB
         asyncio.create_task(self.validateCard(card_id))
 
     async def validateCard(self, card_id: str):
         async with async_session() as session:
             driver = await autisti_crud.getDriverByCard(session, card_id)
             if driver:
-                logging.info(f"[INFO]: card valida trovata nel DB: {card_id}")
+                logging.info(f"[INFO]: Card found in the DB: {card_id}")
                 self._temp_validated_driver = driver
-                # Controlla se è richiesto il PIN
                 if driver.request_pin:
                     await self.promptForPin(driver)
-                # Se non richiede PIN ma richiede ID vehicle, passa alla fase del vehicle
                 elif driver.request_vehicle_id:
                     await self.promptForVehicle(driver)
                 else:
                     self.handleRfidValidation()
             else:
-                logging.info(f"[INFO]: card non trovata nel DB: {card_id}")
+                logging.info(f"[INFO]: Card not found in the DB: {card_id}")
                 self.view.updateLabel(self.params.refused_card_text)
                 self.view.after(3000, self.view.updateLabel, self.params.automatic_mode_text)
 
     async def promptForPin(self, driver):
-        """Mostra un tastierino per inserire il PIN e attende il risultato."""
         future = asyncio.get_event_loop().create_future()
 
         def pinCallback(value):
             future.set_result(value)
-        # Mostra il tastierino per il PIN
+        
         keypad_window = KeypadWindow(self.view, "Inserisci PIN", "Inserisci il PIN:", pinCallback)
     
         try:
-            # Attende al massimo 30 secondi l'input dell'utente
             pin_input = await asyncio.wait_for(future, timeout=20)
-
         except asyncio.TimeoutError:
             keypad_window.destroy()
             self.view.updateLabel("TEMPO SCADUTO")
@@ -136,20 +127,18 @@ class Controller:
             return
         
         if pin_input == driver.pin:
-            logging.info("[INFO]: PIN corretto.")
-            # Se richiede anche l'ID vehicle, passa a quella fase
+            logging.info(f"[INFO]: Pin correct: {pin_input} for driver: {driver.card_number}.")
             if driver.request_vehicle_id:
-                await self.promptForVehicle(driver)
+                await self.promptForVehicle()
             else:
                 self.handleRfidValidation()
         else:
-            logging.info("[INFO]: PIN errato.")
+            logging.info(f"[INFO]: Wrong Pin: {pin_input} for driver {driver.card_number}.")
             self.view.updateLabel("PIN ERRATO")
             await asyncio.sleep(3)
             self.view.updateLabel(self.params.automatic_mode_text)
 
-    async def promptForVehicle(self, driver):
-        """Mostra un tastierino per inserire l'ID del vehicle e, se richiesto, i KM."""
+    async def promptForVehicle(self):
         future = asyncio.get_event_loop().create_future()
 
         def vehicleCallback(value):
@@ -159,7 +148,6 @@ class Controller:
 
         try:
             vehicle_id = await asyncio.wait_for(future, timeout=20)
-
         except asyncio.TimeoutError:
             keypad_window.destroy()
             self.view.updateLabel("TEMPO SCADUTO")
@@ -167,10 +155,10 @@ class Controller:
             self.view.updateLabel(self.params.automatic_mode_text)
             return
 
-        # Verifica l'esistenza del vehicle tramite il modulo CRUD (import dinamico per evitare circolarità)
         from app.crud.veichles import getVehicleById
+
         async with async_session() as session:
-            vehicle = await getVehicleById(session, vehicle_id)
+            vehicle = await getVehicleById(session, vehicle_id) 
 
             if not vehicle:
                 self.view.updateLabel("vehicle NON TROVATO")
@@ -179,7 +167,7 @@ class Controller:
                 return
             
             self._temp_validated_vehicle = vehicle
-            # Se il vehicle richiede l'inserimento dei KM
+
             if getattr(vehicle, "request_vehicle_km", False):
                 future_km = asyncio.get_event_loop().create_future()
 
@@ -207,7 +195,7 @@ class Controller:
                     
                     vehicle.vehicle_total_km = str(km_value)
                     await session.commit()
-                    logging.info(f"[INFO]: vehicle aggiornato con nuovi KM: {km_value}")
+                    logging.info(f"[INFO]: vehicle updated with new km: {km_value}") 
                     
                 except asyncio.TimeoutError:
                     keypad_window.destroy()
@@ -215,20 +203,16 @@ class Controller:
                     await asyncio.sleep(3)
                     self.view.updateLabel(self.params.automatic_mode_text)
                     return
-            # Se tutto è valido, prosegui
+                
             self.handleRfidValidation()
-
-
 
     async def registerErogationRecord(self, side_number: int):
         _, pump_obj = self.sides.get(f"side_{side_number}")
         
-        # Calcola i litri erogati
         liters = Decimal(pump_obj.pulser_counter) / Decimal(pump_obj.params.pulses_per_liter)
         liters = (liters / Decimal(pump_obj.params.calibration_factor)) \
                     .quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-        # Se l'driver è stato validato per quel lato, si tratta di erogazione automatica
         driver = self.validated_drivers.get(side_number)
         if driver:
             driver = self.validated_drivers[side_number]
@@ -237,13 +221,11 @@ class Controller:
             company = driver.company
             driver_full_name = driver.driver_full_name
         else:
-            # Erogazione manuale: nessun driver validato
             mode = "manuale"
             card = None
             company = None
             driver_full_name = None
 
-        # Gestione del vehicle (simile)
         vehicle = self.validated_vehicles.get(side_number)
         if vehicle:
             vehicle_id       = vehicle.vehicle_id
@@ -252,10 +234,8 @@ class Controller:
         else:
             vehicle_id = company_vehicle = vehicle_total_km = None
 
-        # Calcola il prezzo totale (esempio: litri erogati * prezzo per litro)
         total_price = float(liters) * pump_obj.params.price
 
-        # Prepara i dati per la registrazione
         erogation_data = ErogationCreate(
             card = card,
             company = company,
@@ -271,32 +251,27 @@ class Controller:
             total_erogation_price = f"{total_price:.2f}"
         )
 
-        # Inserisci il record nel DB
         async with async_session() as session:
             try:
-                # 1) aggiorna il totalizzatore in atomic upsert
                 await recordTotals(
                     session,
-                    dispenser_id=1,            # o prendi da config if variabile
+                    dispenser_id=1,
                     side=side_number,
                     liters=liters
                 )
 
-                # 2) registra l’erogazione storica
                 new_record = await createErogation(session, erogation_data)
 
-                # 3) commit unico per entrambi gli insert/update
                 await session.commit()
 
                 logging.info(
-                    f"[INFO]: Erogazione e totalizzatore aggiornati per lato {side_number}: "
+                    f"[INFO]: New dispense record and totalizer updated for side: {side_number}: "
                     f"{liters}L"
                 )
                 return new_record
 
             except Exception as e:
-                # rollback automatico con il context manager
-                logging.error(f"[ERROR]: Errore in registerErogationRecord: {e}")
+                logging.error(f"[ERROR]: Error occoured, exception catched in registerErogationRecord: {e}")
                 return None
 
     def handleRfidValidation(self):   
@@ -323,27 +298,25 @@ class Controller:
 
     async def selectionTimeout(self):
         await asyncio.sleep(self.params.selection_time)
-        logging.info("[INFO]: Timeout selezione lato; reset della validazione.")
+        logging.info("[INFO]: Timeout reached, resetting card validation.") 
         self.resetCardValidation()
 
     def sideClicked(self, side_number):
         if not self.card_validated:
-            logging.warning("[WARNING]: Lato cliccato senza previa validazione della card.")
+            logging.warning("[WARNING]: Button side clicked without card validation.")
             return
         
         if self._temp_validated_driver is None:
-            logging.warning("[WARNING]: Nessun driver validato per questo lato.")
+            logging.warning("[WARNING]: No driver found in temporary variable.")
             return
 
-        # Associa i dati dell'driver validato al lato selezionato
         self.validated_drivers[side_number] = self._temp_validated_driver
         self.validated_vehicles[side_number] = self._temp_validated_vehicle
 
-        # Pulisci il temporaneo per evitare conflitti in future sessioni
         self._temp_validated_driver = None
         self._temp_validated_vehicle = None
 
-        logging.info(f"[INFO]: Lato selezionato: {side_number}")
+        logging.info(f"[INFO]: Side selected: {side_number}")
         self.side_selected = side_number
 
         for side, (gui_obj, pump_obj) in self.sides.items():
@@ -362,20 +335,19 @@ class Controller:
         for _, (gui_obj, pump_obj) in self.sides.items():
             if pump_obj.params.side_exists and not pump_obj.nozzle_status:
                 if value is None:
-                    logging.info("[INFO]: Annullamento preset.")
+                    logging.info("[INFO]: Preset deleted.")
                     pump_obj.preset_value = 0
-                    await pump_obj.cancelPresetTasks()
                 else:
-                    logging.info(f"[INFO]: Impostazione preset: {value}L")
+                    logging.info(f"[INFO]: Setting preset to value: {value}L")
                     pump_obj.setPreset(value)
                 gui_obj.updatePreset(pump_obj.preset_value)
 
-    async def resetPresetOnInactiveSides(self, active_side):
+    async def resetPresetOnInactiveSides(self, active_side): 
         for side, (gui_obj, pump_obj) in self.sides.items():
             if pump_obj.params.side_exists and side != f"side_{active_side}" and not pump_obj.nozzle_status:
                 pump_obj.preset_value = 0
                 await pump_obj.cancelPresetTasks()
-                logging.info("[INFO]: Preset resettato su lato inattivo.")
+                logging.info("[INFO]: Preset reset on inactive sides.")
                 gui_obj.updatePreset(pump_obj.preset_value)
 
     async def processQupdates(self):
@@ -413,7 +385,7 @@ class Controller:
             updates.clear()
 
     async def run(self):
-        logging.info(f"[INFO]: Loop principale avviato: {asyncio.get_event_loop().is_running()}")
+        logging.info(f"[INFO]: Main loop started: {asyncio.get_event_loop().is_running()}")
         try:
             await asyncio.gather(
                 self.view.run(),
@@ -421,15 +393,16 @@ class Controller:
                 self.monitorResources()
             )
         except Exception as e:
-            logging.error(f"[ERROR]: Eccezione nel loop principale: {e}")
+            logging.error(f"[ERROR]: Exception in main loop: {e}")
         finally:
             await self.cleanup()
 
     async def cleanup(self):
-        logging.info("[INFO]: Pulizia delle risorse in corso.")
+        logging.info("[INFO]: Cleaning resources.")
         for _, pump in self.sides.values():
             pump.close()
         await self.cancelTasks()
+
 
 if __name__ == "__main__":
     controller = Controller()
@@ -437,9 +410,9 @@ if __name__ == "__main__":
     try:
         loop.run_until_complete(controller.run())
     except KeyboardInterrupt:
-        logging.info("[INFO]: Programma terminato dall'utente.")
+        logging.info("[INFO]: Controller stopped by keyboard interrupt.")
     finally:
-        logging.info("[INFO]: Pulizia finale dei task e chiusura del loop.")
+        logging.info("[INFO]: Cleaning all tasks.")
         loop.run_until_complete(controller.cleanup())
         loop.close()
-        logging.info("[INFO]: Loop chiuso con successo.")
+        logging.info("[INFO]: Loop closed correctly.")
