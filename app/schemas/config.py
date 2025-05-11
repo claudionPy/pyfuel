@@ -46,6 +46,6 @@ class MainParametersSchema(BaseModel):
     selection_time: int
 
 class FullConfigSchema(BaseModel):
-    fuel_sides: Dict[Literal['side_1','side_2','side_3','side_4'], FuelParametersSchema]
-    gui_sides:  Dict[Literal['side_1','side_2','side_3','side_4'], GuiParametersSchema]
+    fuel_sides: Dict[Literal['side_1','side_2'], FuelParametersSchema]
+    gui_sides:  Dict[Literal['side_1','side_2'], GuiParametersSchema]
     main_parameters: MainParametersSchema
