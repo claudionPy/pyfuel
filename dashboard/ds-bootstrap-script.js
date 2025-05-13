@@ -54,7 +54,6 @@ class Dashboard {
             'mode',
             'dispensed_product',
             'dispensed_liters',
-            'erogation_timestamp'
         ],
         vehicles: [
             'vehicle_id',
@@ -431,16 +430,11 @@ class Dashboard {
         // Get picker instances directly (more efficient)
         const startPicker = document.getElementById('dispenses-start-filter')._flatpickr;
         const endPicker = document.getElementById('dispenses-end-filter')._flatpickr;
+        const query = document.getElementById('dispenses-search').value.trim();
 
         // Get dates without creating new objects
         const startTime = startPicker.selectedDates[0]?.toISOString();
         const endTime = endPicker.selectedDates[0]?.toISOString();
-
-        // Only proceed if at least one date is selected
-        if (!startTime && !endTime) {
-            this.showToast('Seleziona almeno una data', 'warning');
-            return;
-        }
 
         try {
             // Show loading state
@@ -448,17 +442,31 @@ class Dashboard {
             btn.disabled = true;
             document.getElementById('dispenses-loading').classList.remove('d-none');
 
-            // Build efficient search params
-            const searchParams = new URLSearchParams({
+            // Build search params
+            const searchParams = {
                 page: this.pagination.dispenses.currentPage,
                 limit: this.pagination.dispenses.pageSize
-            });
+            };
 
-            if (startTime) searchParams.append('start_time', startTime);
-            if (endTime) searchParams.append('end_time', endTime);
+            // Determine which endpoint to use based on the search type
+            let url;
+
+            if (startTime || endTime || query) {
+                // Use the search endpoint for date filtering
+                if (startTime) searchParams.start_time = startTime;
+                if (endTime) searchParams.end_time = endTime;
+                if (query) {
+                    const parsedQuery = this.parseSearchQuery(query);
+                    this.validateSearchParams('dispenses', parsedQuery);
+                    Object.assign(searchParams, parsedQuery);
+                }
+                url = `${this.API_BASE}/erogations/search/?${new URLSearchParams(searchParams).toString()}`;
+            } else {
+                // No search criteria - just load normally
+                return this.loadDispenses();
+            }
 
             // Make API call
-            const url = `${this.API_BASE}/erogations/search/?${searchParams.toString()}`;
             const data = await this.fetchWithRetry(url);
 
             // Efficient rendering
@@ -1669,36 +1677,52 @@ class Dashboard {
         };
     }
 
-    // Fetch con logica di ritentativo
     static async fetchWithRetry(url, options = {}, retries = 3) {
         try {
             const response = await fetch(url, options);
 
             if (!response.ok) {
-                // Gestione errori esistente
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+                let errorData;
+                const contentType = response.headers.get('content-type');
 
-            // Se il server non ha inviato contenuto, non tentare il JSON.parse
-            const contentLength = response.headers.get('content-length');
-            if (response.status === 204 || contentLength === '0') {
-                return null;
-            }
+                try {
+                    errorData = contentType?.includes('application/json')
+                        ? await response.json()
+                        : await response.text();
+                } catch (e) {
+                    errorData = await response.text();
+                }
 
-            try {
-                return await response.json();
-            } catch (e) {
-                // Corpo non JSON: restituisco il testo grezzo
-                return await response.text();
-            }
-        } catch (error) {
-            if (retries > 0) {
-                return await fetchWithRetry(url, options, retries - 1);
-            } else {
+                const error = new Error(`Errore HTTP! stato: ${response.status}`);
+                error.response = {
+                    status: response.status,
+                    data: errorData
+                };
                 throw error;
             }
+
+            return await response.json();
+        } catch (error) {
+            // Non ritentare per questi casi
+            const noRetryConditions = [
+                options.method === 'DELETE',
+                error.message.includes('404'),
+                error.message.includes('422'),
+                error.message.includes('Network Error')
+            ];
+
+            if (noRetryConditions.some(cond => cond)) {
+                throw error;
+            }
+
+            if (retries > 0) {
+                await new Promise(res => setTimeout(res, 1000));
+                return this.fetchWithRetry(url, options, retries - 1);
+            }
+            throw error;
         }
     }
+
 
     // Analizza errore API
     static parseAPIError(error) {

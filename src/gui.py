@@ -6,19 +6,19 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 class GuiSideObject:
     def __init__(self, app: ctk.CTk, guiparams: GuiParameters, side_number: int, on_click_callback):
-        self.app = app
-        self.guiparams = guiparams
-        self.side_number = side_number
-        self.on_click_callback = on_click_callback
-        self.button_font = ctk.CTkFont(family="sans-serif", size=60, weight="bold")
+        self.app = app 
+        self.guiparams = guiparams 
+        self.side_number = side_number 
+        self.on_click_callback = on_click_callback 
+        self.button_font = ctk.CTkFont(family="sans-serif", size=60, weight="bold") 
         self.label_font = ctk.CTkFont(family="sans-serif", size=35, weight="bold")
-        self.createSideButton()
-        self.createPresetLabel()
-        self.createDataLabel()
+        self.createSideButton() 
+        self.createPresetLabel() 
+        self.createDataLabel() 
 
     def createSideButton(self):
         self.button = ctk.CTkButton(
-            self.app,
+            self.app, 
             text=self.guiparams.button_text or "",
             width=self.guiparams.button_width,
             height=self.guiparams.button_height,
@@ -28,7 +28,7 @@ class GuiSideObject:
             corner_radius=self.guiparams.button_corner_radius,
             border_color=self.guiparams.button_border_color,
             border_width=self.guiparams.button_border_width,
-            command=lambda: self.on_click_callback(self.side_number)
+            command=lambda: self.on_click_callback(self.side_number) 
         )
         self.button.place(relx=self.guiparams.button_relx, rely=self.guiparams.button_rely, anchor="center")
 
@@ -39,11 +39,11 @@ class GuiSideObject:
             font=self.label_font,
             text_color="black"
         )
-        offsety = 0.25
+        offsety = 0.25 
         self.preset_label.place(
             relx=self.guiparams.button_relx,
             rely=self.guiparams.button_rely + offsety,
-            anchor="center"
+            anchor="center" 
         )
 
     def createLiters(self):
@@ -53,8 +53,8 @@ class GuiSideObject:
             font=self.label_font,
             text_color="black"
         )
-        offsety = 0.35
-        offsetx = 0.04
+        offsety = 0.35 
+        offsetx = 0.04 
         self.liters_display.place(
             relx=self.guiparams.button_relx + offsetx,
             rely=self.guiparams.button_rely + offsety,
@@ -68,8 +68,8 @@ class GuiSideObject:
             font=self.label_font,
             text_color="black"
         )
-        offsety = 0.35
-        offsetx = 0.05
+        offsety = 0.35 
+        offsetx = 0.05 
         self.liters_label.place(
             relx=self.guiparams.button_relx - offsetx,
             rely=self.guiparams.button_rely + offsety,
@@ -78,25 +78,25 @@ class GuiSideObject:
         self.createLiters()
     
     def updateLiters(self, liters):
-        current_liters = self.liters_display.cget("text")
-        if current_liters != liters:
-            self.liters_display.configure(text=f"{liters:.2f}")
+        current_liters = self.liters_display.cget("text") 
+        if current_liters != liters: 
+            self.liters_display.configure(text=f"{liters:.2f}") 
 
     def updatePreset(self, preset_value):
-        self.preset_label.configure(text=f"Preset: {preset_value}L")
-
+        self.preset_label.configure(text=f"Preset: {preset_value}L") 
+        
     def updateButtonColor(self, color: str, border_color: str):
-        current_fg = self.button.cget("fg_color")
-        current_border = self.button.cget("border_color")
+        current_fg = self.button.cget("fg_color") 
+        current_border = self.button.cget("border_color") 
 
-        if current_fg != color or current_border != border_color:
-            self.button.configure(fg_color=color, border_color=border_color)
+        if current_fg != color or current_border != border_color: 
+            self.button.configure(fg_color=color, border_color=border_color) 
 
-class PresetKeyboard(ctk.CTkFrame):
-    def __init__(self, parent, sendPresetToController_callback):
-        super().__init__(parent)
-        self.sendPresetToController_callback = sendPresetToController_callback
-        self.grid_columnconfigure((0, 1), weight=1)
+class PresetKeyboard(ctk.CTkFrame): 
+    def __init__(self, parent, sendPresetToController_callback): 
+        super().__init__(parent) 
+        self.sendPresetToController_callback = sendPresetToController_callback 
+        self.grid_columnconfigure((0, 1), weight=1) 
         self.grid_rowconfigure((0, 1), weight=1)
 
         self.btn_1 = ctk.CTkButton(self, text="1L", font=("Arial", 50, "bold"), width=200, height=150, hover=None,
@@ -124,24 +124,24 @@ class PresetKeyboard(ctk.CTkFrame):
 
 class KeypadWindow(ctk.CTkToplevel):
     def __init__(self, parent, title: str, prompt: str, callback):
-        super().__init__(parent)
-        self.title(title)
-        self.geometry(f"{parent.winfo_width()}x{parent.winfo_height()}+{parent.winfo_x()}+{parent.winfo_y()}")
-        self.callback = callback
-        self.value = ""
+        super().__init__(parent) 
+        self.title(title) 
+        self.geometry(f"{parent.winfo_width()}x{parent.winfo_height()}+{parent.winfo_x()}+{parent.winfo_y()}") 
+        self.callback = callback 
+        self.value = "" 
         
         self.prompt_font = ctk.CTkFont(family="Arial", size=30, weight="bold")
         self.display_font = ctk.CTkFont(family="Arial", size=40, weight="bold")
         self.button_font = ctk.CTkFont(family="Arial", size=60, weight="bold")
         
-        self.container = ctk.CTkFrame(self)
+        self.container = ctk.CTkFrame(self) 
         self.container.pack(expand=True, fill="both", padx=190, pady=5)
         self.container.grid_propagate(False)
 
-        self.prompt_label = ctk.CTkLabel(self.container, text=prompt, font=self.prompt_font)
+        self.prompt_label = ctk.CTkLabel(self.container, text=prompt, font=self.prompt_font) 
         self.prompt_label.grid(row=0, column=0, columnspan=3, pady=(20, 10))
         
-        self.display = ctk.CTkLabel(self.container, text=self.value, font=self.display_font, width=300)
+        self.display = ctk.CTkLabel(self.container, text=self.value, font=self.display_font, width=300) 
         self.display.grid(row=1, column=0, columnspan=3)
         
         buttons = [
@@ -165,40 +165,40 @@ class KeypadWindow(ctk.CTkToplevel):
             btn.grid(row=row, column=col, pady=5)
         
         for i in range(2, 6):
-            self.container.grid_rowconfigure(i, weight=1)
+            self.container.grid_rowconfigure(i, weight=1)    
         for j in range(3):
             self.container.grid_columnconfigure(j, weight=1)
     
     def onButtonClick(self, t):
         if t == "Del":
-            self.value = self.value[:-1]
+            self.value = self.value[:-1] 
         elif t == "OK":
             self.callback(self.value)
-            self.destroy()
+            self.destroy() 
             return
         else:
-            self.value += t
+            self.value += t 
         
-        self.display.configure(text=self.value)
+        self.display.configure(text=self.value) 
 
 class MainWindow(ctk.CTk):
     def __init__(self, controller):
-        super().__init__()
-        self.controller = controller
+        super().__init__() 
+        self.controller = controller 
 
-        ctk.set_appearance_mode("light")
+        ctk.set_appearance_mode("light") 
         self.geometry('1024x600')
-        self.protocol("WM_DELETE_WINDOW", self.closeGui)
-        self.font = ctk.CTkFont(family="sans-serif", size=50, weight="bold")
+        self.protocol("WM_DELETE_WINDOW", self.closeGui) 
+        self.font = ctk.CTkFont(family="sans-serif", size=50, weight="bold") 
 
-        self.createLabel()
+        self.createLabel() 
 
-        self.rfid_entry = ctk.CTkEntry(self, font=("Arial", 30))
-        self.rfid_entry.place(x=-100, y=-100)
-        self.rfid_entry.bind("<Return>", self.rfidListener)
-        self.rfid_entry.focus_set()
+        self.rfid_entry = ctk.CTkEntry(self, font=("Arial", 30)) 
+        self.rfid_entry.place(x=-100, y=-100) 
+        self.rfid_entry.bind("<Return>", self.rfidListener) 
+        self.rfid_entry.focus_set() 
 
-        self.keyboard = PresetKeyboard(self, self.sendPresetToController)
+        self.keyboard = PresetKeyboard(self, self.sendPresetToController) 
         self.keyboard.place(relx=0.5, rely=0.83, anchor="center")
 
     def createLabel(self):
@@ -216,8 +216,8 @@ class MainWindow(ctk.CTk):
     def updateLabel(self, text: str):
         current_text = self.label.cget("text")
 
-        if current_text != text:
-            self.label.configure(text=text)
+        if current_text != text: 
+            self.label.configure(text=text) 
 
     def sendPresetToController(self, value):
         if value is None:
@@ -227,17 +227,17 @@ class MainWindow(ctk.CTk):
         asyncio.create_task(self.controller.sendPresetToPump(value))
 
     def rfidListener(self, event):
-        card_value = self.rfid_entry.get().strip()
-        self.rfid_entry.delete(0, 'end')
-        self.controller.rfidResponse(card_value)
+        card_value = self.rfid_entry.get().strip() 
+        self.rfid_entry.delete(0, 'end') 
+        self.controller.rfidResponse(card_value) 
 
     def closeGui(self):
         logging.info("[INFO]: closing window")
-        self.destroy()
+        self.destroy() 
 
     async def run(self):
         logging.info(f"[INFO]: GUI event loop running: {asyncio.get_event_loop().is_running()}")
         while True:
-            self.update_idletasks()
-            self.update()
+            self.update_idletasks() 
+            self.update() 
             await asyncio.sleep(.5)

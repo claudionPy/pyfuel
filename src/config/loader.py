@@ -35,7 +35,6 @@ class ConfigManager:
             with open(self.config_path, 'r') as f:
                 loaded_config = json.load(f)
                 
-            # Merge with default to ensure all keys exist
             merged_config = self._merge_with_defaults(loaded_config)
             self.current_config = merged_config
             return merged_config

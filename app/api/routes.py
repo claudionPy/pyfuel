@@ -189,7 +189,7 @@ async def deleteVehicle(
 )
 async def searchVehicles(
     vehicle_id: Optional[str] = Query(None),
-    company: Optional[str] = Query(None),
+    company_vehicle: Optional[str] = Query(None),
     vehicle_total_km: Optional[str] = Query(None),
     plate: Optional[str] = Query(None),
     request_vehicle_km: Optional[bool] = Query(None),
@@ -199,7 +199,7 @@ async def searchVehicles(
 ):
     filters = {
         "vehicle_id": vehicle_id,
-        "company": company,
+        "company_vehicle": company_vehicle,
         "vehicle_total_km": vehicle_total_km,
         "plate": plate,
         "request_vehicle_km": request_vehicle_km,
