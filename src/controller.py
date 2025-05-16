@@ -155,7 +155,7 @@ class Controller:
             self.view.updateLabel(self.params.automatic_mode_text)
             return
 
-        from app.crud.veichles import getVehicleById
+        from app.crud.vehicles import getVehicleById
 
         async with async_session() as session:
             vehicle = await getVehicleById(session, vehicle_id) 

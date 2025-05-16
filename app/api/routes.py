@@ -7,17 +7,17 @@ from datetime import datetime
 from app.database import get_session
 from app.schemas import (
     drivers as drivers_schemas,
-    veichles as vehicles_schemas,
+    vehicles as vehicles_schemas,
     erogations as erogations_schemas,
 )
 from app.schemas.pagination import Paginated
 from app.crud import (
     drivers as drivers_crud,
-    veichles as vehicles_crud,
+    vehicles as vehicles_crud,
     erogations as erogations_crud,
 )
 from app.models.drivers import Driver
-from app.models.veichles import Vehicle
+from app.models.vehicles import Vehicle
 from app.models.erogations import Erogation
 from src.config.loader import ConfigManager
 from app.schemas.config import FullConfigSchema
