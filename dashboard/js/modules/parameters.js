@@ -409,6 +409,46 @@ export class ParametersModule {
                 value="${params.selection_timeout_text || ''}">
         </div>
         <div class="mb-3">
+            <label for="main-all_sides_selected_text" class="form-label">Etichetta tutti i lati selezionati</label>
+            <input type="text" class="form-control" id="main-all_sides_selected_text"
+                value="${params.all_sides_selected_text || ''}">
+        </div>
+        <div class="mb-3">
+            <label for="main-pin_error_text" class="form-label">Etichetta PIN errato</label>
+            <input type="text" class="form-control" id="main-pin_error_text"
+                value="${params.pin_error_text || ''}">
+        </div>
+        <div class="mb-3">
+            <label for="main-vehicle_not_found_text" class="form-label">Etichetta veicolo non trovato</label>
+            <input type="text" class="form-control" id="main-vehicle_not_found_text"
+                value="${params.vehicle_not_found_text || ''}">
+        </div>
+        <div class="mb-3">
+            <label for="main-km_error_text" class="form-label">Etichetta KM non validi</label>
+            <input type="text" class="form-control" id="main-km_error_text"
+                value="${params.km_error_text || ''}">
+        </div>
+        <div class="mb-3">
+            <label for="main-km_error_text_2" class="form-label">Etichetta KM troppo bassi</label>
+            <input type="text" class="form-control" id="main-km_error_text_2"
+                value="${params.km_error_text_2 || ''}">
+        </div>
+        <div class="mb-3">
+            <label for="main-pin_keyboard_text" class="form-label">Etichetta inserimento PIN</label>
+            <input type="text" class="form-control" id="main-pin_keyboard_text"
+                value="${params.pin_keyboard_text || ''}">
+        </div>
+        <div class="mb-3">
+            <label for="main-vehicle_id_text" class="form-label">Etichetta inserimento ID veicolo</label>
+            <input type="text" class="form-control" id="main-vehicle_id_text"
+                value="${params.vehicle_id_text || ''}">
+        </div>
+        <div class="mb-3">
+            <label for="main-km_prompt_text" class="form-label">Etichetta inserimento KM</label>
+            <input type="text" class="form-control" id="main-km_prompt_text"
+                value="${params.km_prompt_text || ''}">
+        </div>
+        <div class="mb-3">
             <label for="main-selection_time" class="form-label">Tempo max selezione (s)</label>
             <input type="number" class="form-control" id="main-selection_time"
                 value="${params.selection_time || ''}">
@@ -476,6 +516,14 @@ export class ParametersModule {
                 select_side_text: Utilities.safeGetValue('main-select_side_text', ''),
                 refused_card_text: Utilities.safeGetValue('main-refused_card_text', ''),
                 selection_timeout_text: Utilities.safeGetValue('main-selection_timeout_text', ''),
+                all_sides_selected_text: Utilities.safeGetValue('main-all_sides_selected_text', ''),
+                pin_error_text: Utilities.safeGetValue('main-pin_error_text', ''),
+                vehicle_not_found_text: Utilities.safeGetValue('main-vehicle_not_found_text', ''),
+                km_error_text: Utilities.safeGetValue('main-km_error_text', ''),
+                km_error_text_2: Utilities.safeGetValue('main-km_error_text_2', ''),
+                pin_keyboard_text: Utilities.safeGetValue('main-pin_keyboard_text', ''),
+                vehicle_id_text: Utilities.safeGetValue('main-vehicle_id_text', ''),
+                km_prompt_text: Utilities.safeGetValue('main-km_prompt_text', ''),
                 selection_time: parseInt(Utilities.safeGetValue('main-selection_time', 0), 10)
             };
 

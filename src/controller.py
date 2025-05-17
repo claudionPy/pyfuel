@@ -86,7 +86,7 @@ class Controller:
 
         if all(pump_obj.authorized or pump_obj.nozzle_status or not pump_obj.params.automatic_mode for _, pump_obj in self.sides.values()):
             logging.info("[INFO]: All sides occupied, skipping card validation.")
-            self.view.updateLabel("TUTTI I LATI SELEZIONATI, ATTENDI")
+            self.view.updateLabel(self.params.all_sides_selected_text)
             self.view.after(3000, self.view.updateLabel, self.params.automatic_mode_text)
             return
 
@@ -115,13 +115,13 @@ class Controller:
         def pinCallback(value):
             future.set_result(value)
         
-        keypad_window = KeypadWindow(self.view, "Inserisci PIN", "Inserisci il PIN:", pinCallback)
+        keypad_window = KeypadWindow(self.view, "PIN", self.params.pin_keyboard_text, pinCallback)
     
         try:
             pin_input = await asyncio.wait_for(future, timeout=20)
         except asyncio.TimeoutError:
             keypad_window.destroy()
-            self.view.updateLabel("TEMPO SCADUTO")
+            self.view.updateLabel(self.params.selection_timeout_text)
             await asyncio.sleep(3)
             self.view.updateLabel(self.params.automatic_mode_text)
             return
@@ -134,7 +134,7 @@ class Controller:
                 self.handleRfidValidation()
         else:
             logging.info(f"[INFO]: Wrong Pin: {pin_input} for driver {driver.card_number}.")
-            self.view.updateLabel("PIN ERRATO")
+            self.view.updateLabel(self.params.pin_error_text)
             await asyncio.sleep(3)
             self.view.updateLabel(self.params.automatic_mode_text)
 
@@ -144,13 +144,13 @@ class Controller:
         def vehicleCallback(value):
             future.set_result(value)
             
-        keypad_window = KeypadWindow(self.view, "Inserisci ID vehicle", "Inserisci l'ID del vehicle:", vehicleCallback)
+        keypad_window = KeypadWindow(self.view, "VEHICLE ID", self.params.vehicle_id_text, vehicleCallback)
 
         try:
             vehicle_id = await asyncio.wait_for(future, timeout=20)
         except asyncio.TimeoutError:
             keypad_window.destroy()
-            self.view.updateLabel("TEMPO SCADUTO")
+            self.view.updateLabel(self.params.selection_timeout_text)
             await asyncio.sleep(3)
             self.view.updateLabel(self.params.automatic_mode_text)
             return
@@ -161,7 +161,7 @@ class Controller:
             vehicle = await getVehicleById(session, vehicle_id) 
 
             if not vehicle:
-                self.view.updateLabel("vehicle NON TROVATO")
+                self.view.updateLabel(self.params.vehicle_not_found_text)
                 await asyncio.sleep(3)
                 self.view.updateLabel(self.params.automatic_mode_text)
                 return
@@ -174,7 +174,7 @@ class Controller:
                 def kmCallback(value):
                     future_km.set_result(value)
 
-                keypad_window = KeypadWindow(self.view, "Inserisci KM", "Inserisci i KM attuali:", kmCallback)
+                keypad_window = KeypadWindow(self.view, "KILOMETERS", self.params.km_prompt_text, kmCallback)
 
                 try:
                     km_str = await asyncio.wait_for(future_km, timeout=20)
@@ -182,13 +182,13 @@ class Controller:
                     try:
                         km_value = int(km_str)
                     except ValueError:
-                        self.view.updateLabel("KM NON VALIDI")
+                        self.view.updateLabel(self.params.km_error_text)
                         await asyncio.sleep(3)
                         self.view.updateLabel(self.params.automatic_mode_text)
                         return
                     
                     if km_value <= int(vehicle.vehicle_total_km):
-                        self.view.updateLabel("KM INSERITI TROPPO BASSI")
+                        self.view.updateLabel(self.params.km_error_text_2)
                         await asyncio.sleep(3)
                         self.view.updateLabel(self.params.automatic_mode_text)
                         return
@@ -199,7 +199,7 @@ class Controller:
                     
                 except asyncio.TimeoutError:
                     keypad_window.destroy()
-                    self.view.updateLabel("TEMPO SCADUTO")
+                    self.view.updateLabel(self.params.selection_timeout_text)
                     await asyncio.sleep(3)
                     self.view.updateLabel(self.params.automatic_mode_text)
                     return

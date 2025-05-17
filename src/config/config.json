@@ -76,7 +76,15 @@
         "manual_mode_text": "EROGATORE IN MANUALE",
         "select_side_text": "SELEZIONA LATO",
         "refused_card_text": "TESSERA NON RICONOSCIUTA",
-        "selection_timeout_text": "TEMPO SELEZIONE SCADUTO",
+        "selection_timeout_text": "TEMPO SCADUTO",
+        "all_sides_selected_text": "TUTTI I LATI SELEZIONATI, ATTENDI",
+        "pin_error_text": "PIN ERRATO",
+        "vehicle_not_found_text": "VEICOLO NON TROVATO",
+        "km_error_text": "KM NON VALIDI",
+        "km_error_text_2": "KM INSERITI TROPPO BASSI",
+        "pin_keyboard_text": "INSERIRE PIN:",
+        "vehicle_id_text": "INSERIRE ID VEICOLO:",
+        "km_prompt_text": "INSERIRE KM:",
         "selection_time": 20
     }
 }

@@ -43,7 +43,15 @@ class MainParameters:
     manual_mode_text: str = "EROGATORE IN MANUALE"
     select_side_text: str = "SELEZIONA LATO"
     refused_card_text: str = "TESSERA NON RICONOSCIUTA"
-    selection_timeout_text: str = "TEMPO SELEZIONE SCADUTO"
+    selection_timeout_text: str = "TEMPO SCADUTO"
+    all_sides_selected_text: str = "TUTTI I LATI SELEZIONATI, ATTENDI"
+    pin_error_text: str = "PIN ERRATO"
+    vehicle_not_found_text: str = "VEICOLO NON TROVATO"
+    km_error_text: str = "KM NON VALIDI"
+    km_error_text_2: str = "KM INSERITI TROPPO BASSI"
+    pin_keyboard_text: str = "INSERIRE PIN:"
+    vehicle_id_text: str = "INSERIRE ID VEICOLO:"
+    km_prompt_text: str = "INSERIRE KM:"
     selection_time: int = 20
 
 @dataclass
