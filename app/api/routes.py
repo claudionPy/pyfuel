@@ -7,17 +7,17 @@ from datetime import datetime
 from app.database import get_session
 from app.schemas import (
     drivers as drivers_schemas,
-    veichles as vehicles_schemas,
+    vehicles as vehicles_schemas,
     erogations as erogations_schemas,
 )
 from app.schemas.pagination import Paginated
 from app.crud import (
     drivers as drivers_crud,
-    veichles as vehicles_crud,
+    vehicles as vehicles_crud,
     erogations as erogations_crud,
 )
 from app.models.drivers import Driver
-from app.models.veichles import Vehicle
+from app.models.vehicles import Vehicle
 from app.models.erogations import Erogation
 from src.config.loader import ConfigManager
 from app.schemas.config import FullConfigSchema
@@ -189,7 +189,7 @@ async def deleteVehicle(
 )
 async def searchVehicles(
     vehicle_id: Optional[str] = Query(None),
-    company: Optional[str] = Query(None),
+    company_vehicle: Optional[str] = Query(None),
     vehicle_total_km: Optional[str] = Query(None),
     plate: Optional[str] = Query(None),
     request_vehicle_km: Optional[bool] = Query(None),
@@ -199,7 +199,7 @@ async def searchVehicles(
 ):
     filters = {
         "vehicle_id": vehicle_id,
-        "company": company,
+        "company_vehicle": company_vehicle,
         "vehicle_total_km": vehicle_total_km,
         "plate": plate,
         "request_vehicle_km": request_vehicle_km,

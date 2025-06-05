@@ -1,5 +1,3 @@
-# app/schemas/config.py
-
 from typing import Dict, Literal, Optional
 from pydantic import BaseModel
 
@@ -43,6 +41,16 @@ class MainParametersSchema(BaseModel):
     select_side_text: str
     refused_card_text: str
     selection_timeout_text: str
+    selection_time: int
+    selection_timeout_text: str
+    all_sides_selected_text: str
+    pin_error_text: str 
+    vehicle_not_found_text: str 
+    km_error_text: str
+    km_error_text_2: str
+    pin_keyboard_text: str
+    vehicle_id_text: str
+    km_prompt_text: str
     selection_time: int
 
 class FullConfigSchema(BaseModel):
