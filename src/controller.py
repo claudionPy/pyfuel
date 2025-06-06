@@ -127,13 +127,13 @@ class Controller:
             return
         
         if pin_input == driver.pin:
-            logging.info(f"[INFO]: Pin correct: {pin_input} for driver: {driver.card_number}.")
+            logging.info(f"[INFO]: Pin correct: {pin_input} for driver: {driver.card}.")
             if driver.request_vehicle_id:
                 await self.promptForVehicle()
             else:
                 self.handleRfidValidation()
         else:
-            logging.info(f"[INFO]: Wrong Pin: {pin_input} for driver {driver.card_number}.")
+            logging.info(f"[INFO]: Wrong Pin: {pin_input} for driver {driver.card}.")
             self.view.updateLabel(self.params.pin_error_text)
             await asyncio.sleep(3)
             self.view.updateLabel(self.params.automatic_mode_text)
