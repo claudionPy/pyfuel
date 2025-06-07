@@ -15,10 +15,10 @@ RUN adduser --disabled-password --gecos "" appuser
 USER appuser
 WORKDIR /home/appuser/app
 
-# 4) Copy and install Python dependencies
-COPY --chown=appuser:appuser requirements.txt .
 RUN python3 -m pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
+# 4) Copy and install Python dependencies
+COPY --chown=appuser:appuser requirements.txt .
 
 # 5) Copy the rest of your application (including app/ and alembic/)
 COPY --chown=appuser:appuser . .
