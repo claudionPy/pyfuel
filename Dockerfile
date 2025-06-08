@@ -1,35 +1,24 @@
-# ---------- Dockerfile ----------
-
 # 1) Use a slim Python base
 FROM python:3.9-slim
 
-# 2) Install system packages needed for asyncpg (Postgres driver)
-USER root
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-        gcc libpq-dev curl \
- && rm -rf /var/lib/apt/lists/*
+# 2) Install system packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc libpq-dev libffi-dev python3-dev curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# 3) Create a non-root user
+# 3) Install Python deps as root
+COPY requirements.txt .
+RUN python3 -m pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# 4) Create app user AFTER installing
 RUN adduser --disabled-password --gecos "" appuser
 USER appuser
 WORKDIR /home/appuser/app
 
-RUN python3 -m pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
-# 4) Copy and install Python dependencies
-COPY --chown=appuser:appuser requirements.txt .
-
-# 5) Copy the rest of your application (including app/ and alembic/)
+# 5) Copy the project
 COPY --chown=appuser:appuser . .
 
-# 6) Ensure entrypoint.sh is executable
+# 6) Entrypoint
 RUN chmod +x ./entrypoint.sh
-
-# 7) Expose port 8000 for Uvicorn
-EXPOSE 8000
-
-# 8) Default entrypoint
 ENTRYPOINT ["./entrypoint.sh"]
-# ----------------------------------
-

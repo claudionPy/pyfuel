@@ -3,7 +3,7 @@ import { Utilities } from './utils.js';
 import { DispensesModule } from '../modules/dispenses.js';
 
 export class Dashboard {
-    static API_BASE = window.API_BASE || 'http://raspberrypi.local:8000';
+    static API_BASE = window.API_BASE || 'http://192.168.1.8:8000';
     static vehiclesCache = null;
     static driversCache = null;
     static debounceTimers = {};
