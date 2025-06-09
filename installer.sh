@@ -1,20 +1,29 @@
 #!/bin/bash
 set -e
 
-echo "==> INITIALIZING DOCKER AND DOCKER-COMPOSE"
+echo "==> INSTALLING DOCKER"
 curl -sSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
-newgrp docker
 
 echo "==> INSTALLING DOCKER-COMPOSE PLUGIN"
 mkdir -p ~/.docker/cli-plugins
-curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-aarch64 \
-  -o ~/.docker/cli-plugins/docker-compose
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-armv7 -o ~/.docker/cli-plugins/docker-compose
 chmod +x ~/.docker/cli-plugins/docker-compose
 
-echo "==> CLONING FILES FROM GIT REPOSITORY"
+# Ensure ~/.docker/cli-plugins is on PATH
+if [[ ":$PATH:" != *":$HOME/.docker/cli-plugins:"* ]]; then
+    echo 'export PATH=$PATH:$HOME/.docker/cli-plugins' >> ~/.bashrc
+    export PATH=$PATH:$HOME/.docker/cli-plugins
+fi
+
+echo "==> APPLYING docker group WITHOUT LOGOUT"
+newgrp docker <<EONG
+echo "==> DOCKER AND COMPOSE INSTALLED SUCCESSFULLY"
+docker version
+docker compose version
+EONG
+
 cd ~
-git clone https://github.com/claudionPy/ObjorFuel---py.git
 cd pyfuel
 
 echo "==> CREATING FILE .env"
@@ -29,7 +38,7 @@ docker compose build
 docker compose up -d
 
 echo "==> CREATING SYSTEMD SERVICE FOR DOCKER"
-sudo tee /etc/systemd/system/objorfuel.service > /dev/null <<EOF
+sudo tee /etc/systemd/system/pyfuel-docker.service > /dev/null <<EOF
 [Unit]
 Description=PyFuelDocker Compose stack
 After=network.target docker.service
@@ -48,13 +57,17 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable objorfuel.service
-sudo systemctl start objorfuel.service
+sudo systemctl enable pyfuel-docker.service
+sudo systemctl start pyfuel-docker.service
 
 echo "==> INSTALLING PIGPIO DAEMON"
 sudo apt-get update
-sudo apt-get install --no-install-recommends xserver-xorg xinit openbox x11-utils python3-tk python3-pip pigpio
-pip3 install --user -r requirements.txt
+sudo apt-get install -y --no-install-recommends xserver-xorg xinit openbox x11-utils python3-tk python3-pip python3-venv pigpio
+echo "==> CREATING PYTHON VENV AND INSTALLING DEPENDENCIES"
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 
 sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
@@ -89,4 +102,3 @@ EOF
 fi
 
 echo "==> INSTALLATION COMPLETE: please reboot the system"
-
