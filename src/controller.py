@@ -101,7 +101,7 @@ class Controller:
                 if driver.request_pin:
                     await self.promptForPin(driver)
                 elif driver.request_vehicle_id:
-                    await self.promptForVehicle(driver)
+                    await self.promptForVehicle()
                 else:
                     self.handleRfidValidation()
             else:
