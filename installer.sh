@@ -16,12 +16,10 @@ if [[ ":$PATH:" != *":$HOME/.docker/cli-plugins:"* ]]; then
     export PATH=$PATH:$HOME/.docker/cli-plugins
 fi
 
-echo "==> APPLYING docker group WITHOUT LOGOUT"
-newgrp docker <<EONG
-echo "==> DOCKER AND COMPOSE INSTALLED SUCCESSFULLY"
-docker version
-docker compose version
-EONG
+if ! groups $USER | grep -q "\bdocker\b"; then
+    echo "==> DOCKER INSTALL COMPLETE. NOW REBOOT THE SYSTEM AND RE-RUN THE installer.sh SCRIPT"
+    exit 0
+fi
 
 cd ~
 cd pyfuel
