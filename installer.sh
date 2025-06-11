@@ -84,11 +84,11 @@ set -a
 . /home/pyuser/pyfuel/.env
 set +a
 
-export DB_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}
+export DB_URL=postgresql+asyncpg://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@localhost:5432/\${POSTGRES_DB}
 
 cd /home/pyuser/pyfuel
 
-exec python3 -m src.controller
+exec /home/pyuser/pyfuel/.venv/bin/python3 -m src.controller
 EOF
 chmod +x ~/.xinitrc
 
