@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from src.config.params import GuiParameters
+from config.params import GuiParameters
 import asyncio
 import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
