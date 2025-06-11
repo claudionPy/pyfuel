@@ -2,10 +2,10 @@ import asyncio
 import logging
 import psutil
 from decimal import Decimal, ROUND_HALF_UP
-from src.config.loader import ConfigManager
+from config.loader import ConfigManager
 from src.hardware import PumpObject
 from src.gui import MainWindow, GuiSideObject, KeypadWindow
-from src.config.params import GuiSides, FuelSides
+from config.params import GuiSides, FuelSides
 from app.database import async_session
 from app.crud import drivers as autisti_crud
 from app.crud.erogations import createErogation

@@ -4,7 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, Any
 from dataclasses import asdict
-from src.config.params import FuelParameters, GuiParameters, MainParameters
+from config.params import FuelParameters, GuiParameters, MainParameters
 
 class ConfigManager:
     def __init__(self, config_path: str = "src/config/config.json"):
