@@ -7,7 +7,7 @@ from dataclasses import asdict
 from config.params import FuelParameters, GuiParameters, MainParameters
 
 class ConfigManager:
-    def __init__(self, config_path: str = "src/config/config.json"):
+    def __init__(self, config_path: str = "config/config.json"):
         self.config_path = Path(config_path)
         self.default_config = self._create_default_config()
         self.current_config = None
