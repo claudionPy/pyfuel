@@ -7,7 +7,7 @@ async def recordTotals(
     session: AsyncSession,
     dispenser_id: int,
     side: int,
-    liters: Decimal  # ora Decimal
+    liters: Decimal
 ) -> None:
     col = getattr(DispenserTotals, f"total_side_{side}")
     stmt = pg_insert(DispenserTotals).values(

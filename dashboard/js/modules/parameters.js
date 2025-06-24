@@ -14,7 +14,6 @@ export class ParametersModule {
             const url = `${Dashboard.API_BASE}/parameters/`;
             const data = await ApiService.fetchWithRetry(url);
 
-            // Visualizza tutte le sezioni dei parametri
             this.renderFuelParameters(data.fuel_sides);
             this.renderGuiParameters(data.gui_sides);
             this.renderMainParameters(data.main_parameters);
@@ -34,7 +33,6 @@ export class ParametersModule {
         const isActive = checkbox.checked;
 
         try {
-            // Aggiorna il colore dell'intestazione immediatamente
             const containerId = `${type}-side-${side}-params`;
             const container = document.getElementById(containerId);
             if (container) {
@@ -44,9 +42,7 @@ export class ParametersModule {
                 }
             }
 
-            // Se si sta attivando, dobbiamo caricare i parametri
             if (isActive) {
-                // Ottieni i parametri correnti per mostrare i valori esistenti
                 const url = `${Dashboard.API_BASE}/parameters/`;
                 const data = await ApiService.fetchWithRetry(url);
 
@@ -107,7 +103,6 @@ export class ParametersModule {
                 `;
                 }
             } else {
-                // Se si sta disattivando, mostra solo la checkbox di abilitazione
                 document.getElementById(containerId).innerHTML = `
                 <div class="mb-3 form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="${type}-${side}-enabled"
@@ -133,7 +128,6 @@ export class ParametersModule {
             const side = sides[sideKey] || {};
             const isActive = side.side_exists || false;
 
-            // Classe dinamica per l'intestazione in base allo stato attivo
             const headerClass = isActive ? 'bg-primary' : 'bg-secondary';
             const header = container.closest('.card')?.querySelector('.card-header');
             if (header) {
@@ -250,7 +244,6 @@ export class ParametersModule {
             const side = sides[sideKey] || {};
             const isActive = side.side_exists || false;
 
-            // Classe dinamica per l'intestazione in base allo stato attivo
             const headerClass = isActive ? 'bg-primary' : 'bg-secondary';
             const header = container.closest('.card')?.querySelector('.card-header');
             if (header) {
@@ -465,7 +458,6 @@ export class ParametersModule {
 
             const parameters = { fuel_sides: {}, gui_sides: {}, main_parameters: {} };
 
-            // Lati carburante
             for (let i = 1; i <= 2; i++) {
                 const p = `fuel-${i}-`;
                 parameters.fuel_sides[`side_${i}`] = {
@@ -485,7 +477,6 @@ export class ParametersModule {
                 };
             }
 
-            // Lati GUI
             for (let i = 1; i <= 2; i++) {
                 const p = `gui-${i}-`;
                 parameters.gui_sides[`side_${i}`] = {
@@ -509,7 +500,6 @@ export class ParametersModule {
                 };
             }
 
-            // Parametri principali
             parameters.main_parameters = {
                 automatic_mode_text: Utilities.safeGetValue('main-automatic_mode_text', ''),
                 manual_mode_text: Utilities.safeGetValue('main-manual_mode_text', ''),
@@ -527,7 +517,6 @@ export class ParametersModule {
                 selection_time: parseInt(Utilities.safeGetValue('main-selection_time', 0), 10)
             };
 
-            // Invio
             const url = `${Dashboard.API_BASE}/parameters/`;
             await ApiService.fetchWithRetry(url, {
                 method: 'PUT',
@@ -556,14 +545,12 @@ export class ParametersModule {
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            // Handle empty response (204 No Content)
             if (response === null) {
                 await this.loadParameters();
                 Toast.showToast('Parametri ripristinati ai valori predefiniti');
                 return;
             }
 
-            // Handle JSON response
             if (response && response.status === 'success') {
                 await this.loadParameters();
                 Toast.showToast('Parametri ripristinati ai valori predefiniti');

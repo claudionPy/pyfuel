@@ -5,7 +5,6 @@ export class TableRenderer {
     static renderDispenses(data) {
         const tbody = document.querySelector('#dispense-table tbody');
 
-        // Use document fragment and batch DOM operations
         const fragment = document.createDocumentFragment();
         const rowTemplate = document.createElement('tr');
 
@@ -25,7 +24,6 @@ export class TableRenderer {
             fragment.appendChild(row);
         });
 
-        // Single DOM update
         tbody.innerHTML = '';
         tbody.appendChild(fragment);
     }

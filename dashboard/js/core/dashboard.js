@@ -8,7 +8,6 @@ export class Dashboard {
     static driversCache = null;
     static debounceTimers = {};
 
-    // Configurazione paginazione
     static pagination = {
         dispenses: {
             currentPage: 1,
@@ -27,7 +26,6 @@ export class Dashboard {
         }
     };
 
-    // Campi di ricerca consentiti per ogni sezione
     static allowedSearchFields = {
         dispenses: [
             'card',
@@ -84,7 +82,6 @@ export class Dashboard {
     }
 
     static setupFormHandlers() {
-        // Toggle richiesta PIN autista
         document.getElementById('richiedi_pin')?.addEventListener('change', function () {
             const pinField = document.getElementById('pin');
             const pinError = document.getElementById('pin-error');
@@ -114,21 +111,18 @@ export class Dashboard {
     }
 
     static setupPageSizeControls() {
-        // Dimensione pagina erogazioni
         document.getElementById('dispenses-page-size')?.addEventListener('change', (e) => {
             this.pagination.dispenses.pageSize = parseInt(e.target.value);
             this.pagination.dispenses.currentPage = 1;
             DispensesModule.loadDispenses();
         });
 
-        // Dimensione pagina veicoli
         document.getElementById('vehicles-page-size')?.addEventListener('change', (e) => {
             this.pagination.vehicles.pageSize = parseInt(e.target.value);
             this.pagination.vehicles.currentPage = 1;
             VehiclesModule.loadVehicles();
         });
 
-        // Dimensione pagina autisti
         document.getElementById('drivers-page-size')?.addEventListener('change', (e) => {
             this.pagination.drivers.pageSize = parseInt(e.target.value);
             this.pagination.drivers.currentPage = 1;
@@ -137,20 +131,17 @@ export class Dashboard {
     }
 
     static setupSearchFieldHelpers() {
-        // Funzione helper per creare elementi dropdown
         const createDropdownItems = (section, dropdownId) => {
             const dropdown = document.querySelector(`#${dropdownId} + ul.search-fields-dropdown`);
             if (!dropdown) return;
 
             dropdown.innerHTML = '';
 
-            // Aggiungi intestazione
             const header = document.createElement('li');
             header.className = 'dropdown-header';
             header.textContent = 'Campi di ricerca disponibili:';
             dropdown.appendChild(header);
 
-            // Aggiungi ogni campo come elemento cliccabile
             this.allowedSearchFields[section].forEach(field => {
                 const item = document.createElement('li');
                 const link = document.createElement('a');
@@ -168,14 +159,12 @@ export class Dashboard {
             });
         };
 
-        // Configura per ogni sezione
         createDropdownItems('dispenses', 'dispensesFieldsDropdown');
         createDropdownItems('vehicles', 'vehiclesFieldsDropdown');
         createDropdownItems('drivers', 'driversFieldsDropdown');
     }
 
     static setupDateTimePickers() {
-        // Shared configuration for both pickers
         const fpOptions = {
             enableTime: true,
             time_24hr: true,
@@ -195,31 +184,26 @@ export class Dashboard {
             }
         };
 
-        // Initialize pickers with debounced event handlers
         const startPicker = flatpickr("#dispenses-start-filter", fpOptions);
         const endPicker = flatpickr("#dispenses-end-filter", fpOptions);
 
-        // Debounced clear handler
         const debouncedClear = Utilities.debounce(() => {
             startPicker.clear();
             endPicker.clear();
             DispensesModule.loadDispenses();
         }, 300);
 
-        // Lightweight event listeners
         document.getElementById('clear-time-filter').addEventListener('click', debouncedClear);
         document.getElementById('apply-time-filter').addEventListener('click',
             Utilities.debounce(() => DispensesModule.searchDispenses(), 300));
     }
 
     static parseSearchQuery(query) {
-        // Gestisci la ricerca per timestamp
         const timestampMatch = query.match(/erogation_timestamp:\s*(.+)/);
         if (timestampMatch) {
             return { erogation_timestamp: timestampMatch[1].trim() };
         }
 
-        // Analisi campo:valore esistente
         const m = query.match(/^([a-zA-Z0-9_]+)\s*:\s*(.+)$/);
         if (m) {
             const field = m[1].trim();
@@ -252,16 +236,12 @@ export class Dashboard {
             throw new Error('Nessun dato da esportare');
         }
 
-        // Ottieni le intestazioni dalle chiavi del primo oggetto
         const headers = Object.keys(data[0]);
 
-        // Crea il contenuto CSV
         const csvRows = [];
 
-        // Aggiungi riga di intestazione
         csvRows.push(headers.join(','));
 
-        // Aggiungi righe di dati
         data.forEach(item => {
             const values = headers.map(header => {
                 const value = item[header] !== undefined ? item[header] : '';

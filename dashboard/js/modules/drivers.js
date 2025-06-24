@@ -41,7 +41,6 @@ export class DriversModule {
         const loading = document.getElementById('drivers-loading');
         const btn = document.getElementById('load-drivers');
 
-        // Reimposta alla prima pagina durante la ricerca
         Dashboard.pagination.drivers.currentPage = 1;
 
         if (!query) {

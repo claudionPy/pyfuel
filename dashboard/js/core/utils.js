@@ -38,21 +38,16 @@ export class Utilities {
     static normalizeTimestamp(timestamp) {
         if (!timestamp) return null;
 
-        // If it's already a Date object
         if (timestamp instanceof Date) return timestamp;
 
-        // If it's a number (epoch time)
         if (!isNaN(timestamp)) return new Date(Number(timestamp));
 
-        // If it's an ISO string without Z (UTC indicator)
         if (typeof timestamp === 'string' && !timestamp.endsWith('Z')) {
-            // Try adding Z if it looks like an ISO string without timezone
             if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(timestamp)) {
                 return new Date(timestamp + 'Z');
             }
         }
 
-        // Default case - let Date constructor handle it
         return new Date(timestamp);
     }
 }
