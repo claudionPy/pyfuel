@@ -41,7 +41,6 @@ export class VehiclesModule {
         const loading = document.getElementById('vehicles-loading');
         const btn = document.getElementById('load-vehicles');
 
-        // Reimposta alla prima pagina durante la ricerca
         Dashboard.pagination.vehicles.currentPage = 1;
 
         if (!query) {
@@ -102,7 +101,6 @@ export class VehiclesModule {
         const form = e.target;
         const kmInput = form.km_totali_veicolo;
 
-        // Valida l'input dei chilometri
         if (kmInput.value.trim() && !/^\d*\.?\d+$/.test(kmInput.value.trim())) {
             kmInput.classList.add('is-invalid');
             Toast.showToast('I chilometri devono essere un valore numerico', 'warning');
@@ -148,7 +146,6 @@ export class VehiclesModule {
                 await this.loadVehicles();
             }
 
-            // Gestisci sia ID stringa che numerici
             const vehicle = Dashboard.vehiclesCache.find(v =>
                 String(v.vehicle_id) === String(vehicleId)
             );

@@ -10,7 +10,6 @@ mkdir -p ~/.docker/cli-plugins
 curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-armv7 -o ~/.docker/cli-plugins/docker-compose
 chmod +x ~/.docker/cli-plugins/docker-compose
 
-# Ensure ~/.docker/cli-plugins is on PATH
 if [[ ":$PATH:" != *":$HOME/.docker/cli-plugins:"* ]]; then
     echo 'export PATH=$PATH:$HOME/.docker/cli-plugins' >> ~/.bashrc
     export PATH=$PATH:$HOME/.docker/cli-plugins

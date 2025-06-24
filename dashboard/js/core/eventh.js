@@ -8,7 +8,6 @@ import { Modals } from "../ui/modals.js";
 
 export class EventHandlers {
     static setupCoreEventListeners() {
-        // Form veicolo
         const formVehicle = document.getElementById('form-vehicle');
         if (formVehicle) {
             formVehicle.addEventListener('submit', event => {
@@ -17,7 +16,6 @@ export class EventHandlers {
             });
         }
 
-        // Form autista
         const formDriver = document.getElementById('form-driver');
         if (formDriver) {
             formDriver.addEventListener('submit', event => {
@@ -26,7 +24,6 @@ export class EventHandlers {
             });
         }
 
-        // Erogazioni
         document.getElementById('load-dispenses').addEventListener('click',
             Utilities.debounce(() => DispensesModule.loadDispenses(), 300));
 
@@ -38,7 +35,6 @@ export class EventHandlers {
             if (e.key === 'Enter') DispensesModule.searchDispenses();
         });
 
-        // Veicoli
         document.getElementById('load-vehicles').addEventListener('click',
             Utilities.debounce(() => VehiclesModule.loadVehicles(), 300));
         document.getElementById('search-vehicles').addEventListener('click',
@@ -52,7 +48,6 @@ export class EventHandlers {
             Modals.showModal('modal-vehicle');
         });
 
-        // Autisti
         document.getElementById('load-drivers').addEventListener('click',
             Utilities.debounce(() => DriversModule.loadDrivers(), 300));
         document.getElementById('search-drivers').addEventListener('click',
@@ -66,7 +61,6 @@ export class EventHandlers {
             Modals.showModal('modal-driver');
         });
 
-        // Pulsanti esportazione ed eliminazione
         document.getElementById('export-dispenses').addEventListener('click',
             () => TableRenderer.exportCurrentPageTable('dispense-table', 'erogazioni.csv'));
         document.getElementById('export-all-dispenses').addEventListener('click',
@@ -82,7 +76,6 @@ export class EventHandlers {
         document.getElementById('export-all-drivers').addEventListener('click',
             () => DriversModule.exportAllDrivers());
 
-        // Parametri
         document.getElementById('load-parameters').addEventListener('click',
             Utilities.debounce(() => ParametersModule.loadParameters(), 300));
         document.getElementById('save-parameters').addEventListener('click',
