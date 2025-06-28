@@ -4,25 +4,36 @@ import { Pagination } from "../ui/pagination.js";
 import { Toast } from "../ui/toast.js";
 import { Modals } from "../ui/modals.js";
 
+/**
+ * VehiclesModule handles CRUD, search, pagination, and export
+ * for vehicle records in the dashboard.
+ */
 export class VehiclesModule {
+    /**
+     * Load vehicles from API with optional page number, update table & pagination.
+     * @param {number|null} [page=null] - Page to load or keep current if null.
+     */
     static async loadVehicles(page = null) {
-        if (page !== null) {
-            Dashboard.pagination.vehicles.currentPage = page;
-        }
+        if (page !== null) Dashboard.pagination.vehicles.currentPage = page;
 
         const { currentPage, pageSize } = Dashboard.pagination.vehicles;
         const loading = document.getElementById('vehicles-loading');
         const btn = document.getElementById('load-vehicles');
 
         try {
+            // Indicate loading state
             btn.disabled = true;
             loading.classList.remove('d-none');
 
+            // Fetch data
             const url = `${Dashboard.API_BASE}/vehicles/?page=${currentPage}&limit=${pageSize}`;
             const data = await ApiService.fetchWithRetry(url);
 
+            // Update total count & cache
             Dashboard.pagination.vehicles.totalItems = data.total || data.items.length;
             Dashboard.vehiclesCache = data.items;
+
+            // Render and paginate
             TableRenderer.renderVehicles(data.items);
             Pagination.updatePaginationControls('vehicles');
 
@@ -35,6 +46,9 @@ export class VehiclesModule {
         }
     }
 
+    /**
+     * Search vehicles by field or free-text, reset to page 1.
+     */
     static async searchVehicles() {
         const input = document.getElementById('vehicles-search');
         const query = input.value.trim();
@@ -53,6 +67,7 @@ export class VehiclesModule {
             btn.disabled = true;
             loading.classList.remove('d-none');
 
+            // Parse & validate
             let searchParams;
             try {
                 searchParams = Dashboard.parseSearchQuery(query);
@@ -62,6 +77,7 @@ export class VehiclesModule {
                 return;
             }
 
+            // Build URL
             const { currentPage, pageSize } = Dashboard.pagination.vehicles;
             const url = Dashboard.buildSearchUrl('/vehicles/search/', {
                 ...searchParams,
@@ -75,15 +91,16 @@ export class VehiclesModule {
             TableRenderer.renderVehicles(data.items);
             Pagination.updatePaginationControls('vehicles');
 
-            if (data.items.length === 0) {
+            // Notify user
+            if (!data.items.length) {
                 Toast.showToast('Nessun veicolo corrispondente ai criteri di ricerca', 'info');
             } else {
                 const itemCount = data.items.length;
-                const totalCount = Dashboard.pagination.vehicles.totalItems;
-                const message = totalCount > itemCount
-                    ? `Mostrati ${itemCount} di ${totalCount} veicoli corrispondenti`
+                const total = Dashboard.pagination.vehicles.totalItems;
+                const msg = total > itemCount
+                    ? `Mostrati ${itemCount} di ${total} veicoli corrispondenti`
                     : `Trovati ${itemCount} veicoli corrispondenti`;
-                Toast.showToast(message);
+                Toast.showToast(msg);
             }
         } catch (err) {
             ApiService.showDetailedErrorToast(err, 'Ricerca fallita');
@@ -96,11 +113,16 @@ export class VehiclesModule {
         }
     }
 
+    /**
+     * Handle submit for create or update vehicle.
+     * @param {Event} e - Form submit event.
+     */
     static async handleVehicleSubmit(e) {
         e.preventDefault();
         const form = e.target;
         const kmInput = form.km_totali_veicolo;
 
+        // Validate numeric km
         if (kmInput.value.trim() && !/^\d*\.?\d+$/.test(kmInput.value.trim())) {
             kmInput.classList.add('is-invalid');
             Toast.showToast('I chilometri devono essere un valore numerico', 'warning');
@@ -108,6 +130,7 @@ export class VehiclesModule {
         }
 
         try {
+            // Build payload
             const payload = {
                 vehicle_id: form.id_veicolo.value,
                 company_vehicle: form.nome_compagnia.value,
@@ -127,33 +150,32 @@ export class VehiclesModule {
                 body: JSON.stringify(payload)
             });
 
+            // Reset UI
             Modals.hideModal('modal-vehicle');
             form.reset();
             delete form.dataset.originalId;
-
             Dashboard.vehiclesCache = null;
             await this.loadVehicles();
-
             Toast.showToast(`Veicolo ${method === 'POST' ? 'creato' : 'aggiornato'} con successo`);
         } catch (err) {
             ApiService.showDetailedErrorToast(err, 'Operazione veicolo fallita');
         }
     }
 
+    /**
+     * Populate form for editing an existing vehicle.
+     * @param {string|number} vehicleId - Identifier of the vehicle.
+     */
     static async editVehicle(vehicleId) {
         try {
-            if (!Dashboard.vehiclesCache) {
-                await this.loadVehicles();
-            }
-
+            if (!Dashboard.vehiclesCache) await this.loadVehicles();
+            // Find vehicle in cache
             const vehicle = Dashboard.vehiclesCache.find(v =>
                 String(v.vehicle_id) === String(vehicleId)
             );
+            if (!vehicle) throw new Error('Veicolo non trovato');
 
-            if (!vehicle) {
-                throw new Error('Veicolo non trovato');
-            }
-
+            // Fill form fields
             const form = document.getElementById('form-vehicle');
             form.id_veicolo.value = String(vehicle.vehicle_id);
             form.nome_compagnia.value = vehicle.company_vehicle || '';
@@ -170,6 +192,10 @@ export class VehiclesModule {
         }
     }
 
+    /**
+     * Delete a vehicle after confirmation and reload list.
+     * @param {string|number} vehicleId
+     */
     static async deleteVehicle(vehicleId) {
         if (!confirm(`Sei sicuro di voler eliminare il veicolo con ID: ${vehicleId}?`)) return;
 
@@ -177,7 +203,6 @@ export class VehiclesModule {
             const res = await fetch(`${Dashboard.API_BASE}/vehicles/${encodeURIComponent(vehicleId)}`, {
                 method: 'DELETE'
             });
-
             if (res.status === 204 || res.ok) {
                 Dashboard.vehiclesCache = null;
                 await this.loadVehicles();
@@ -185,9 +210,9 @@ export class VehiclesModule {
             } else {
                 let errorMessage;
                 try {
-                    const errorData = await res.json();
-                    errorMessage = errorData.message || errorData.error || 'Eliminazione fallita';
-                } catch (e) {
+                    const errData = await res.json();
+                    errorMessage = errData.message || errData.error || 'Eliminazione fallita';
+                } catch {
                     errorMessage = await res.text();
                 }
                 throw new Error(errorMessage);
@@ -197,6 +222,9 @@ export class VehiclesModule {
         }
     }
 
+    /**
+     * Export all vehicles by fetching full dataset and triggering CSV download.
+     */
     static async exportAllVehicles() {
         try {
             const url = `${Dashboard.API_BASE}/vehicles/`;
@@ -209,3 +237,4 @@ export class VehiclesModule {
         }
     }
 }
+
