@@ -3,7 +3,7 @@ import { Utilities } from './utils.js';
 import { DispensesModule } from '../modules/dispenses.js';
 
 export class Dashboard {
-    static API_BASE = window.API_BASE || 'http://localhost:8000';
+    static API_BASE = window.API_BASE || 'http://pyfuel.local:8000';
     static vehiclesCache = null;
     static driversCache = null;
     static debounceTimers = {};
