@@ -84,14 +84,14 @@ Sezione Erogazioni
 
     Filtri per campo:
 
-    ![Screenshot From 2025-06-30 18-37-38](https://github.com/user-attachments/assets/2e22cf78-3163-49ef-bea6-fbd2f269cdd6)
+![Screenshot From 2025-06-30 18-37-38](https://github.com/user-attachments/assets/2e22cf78-3163-49ef-bea6-fbd2f269cdd6)
 
 
         totale litri, utente (tessera/nome), modalità, prodotto, dati veicolo (se presenti), lato di erogazione (1 o 2)
 
     Filtri temporali: da–a + combinazione con filtri di campo
 
-    ![Screenshot From 2025-06-30 18-40-20](https://github.com/user-attachments/assets/86f0c1fc-99c8-424f-95df-6df4b1312edf)
+![Screenshot From 2025-06-30 18-40-20](https://github.com/user-attachments/assets/86f0c1fc-99c8-424f-95df-6df4b1312edf)
 
 
     Esportazione CSV: pagina corrente o tutti i record
@@ -136,7 +136,7 @@ Sezione Parametri
 
     Parametri Fuel (per lato)
 
-    ![Screenshot From 2025-06-30 18-38-41](https://github.com/user-attachments/assets/dee53b1a-7a39-43bd-a878-20b67b19088c)
+![Screenshot From 2025-06-30 18-38-41](https://github.com/user-attachments/assets/dee53b1a-7a39-43bd-a878-20b67b19088c)
 
 
         GPIO pump, pulser, litri/pulse
