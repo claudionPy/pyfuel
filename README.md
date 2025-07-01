@@ -154,9 +154,7 @@ Manual Mode (arancione)	Errore card (rosso)
 
 [img-side]: ![Screenshot From 2025-06-30 18-35-44](https://github.com/user-attachments/assets/e672a8ab-0c69-4a58-a915-8c4c77087779)
 
-[img-manual]: 
-
-[img-error]: ![Screenshot From 2025-06-30 18-36-18](https://github.com/user-attachments/assets/247f1ccf-ac2a-4dd8-9a0f-bd7fd9e12f72)
+[img-busy]: ![Screenshot From 2025-06-30 18-36-18](https://github.com/user-attachments/assets/247f1ccf-ac2a-4dd8-9a0f-bd7fd9e12f72)
 
 
 🤝 Contribuire
