@@ -77,13 +77,22 @@ Al boot, Pyfuel parte in Self (verde). Per cambiare modalità di avvio, usa la d
 La Dashboard si compone di quattro sezioni principali:
 Sezione Erogazioni
 
+![Screenshot From 2025-06-30 18-37-22](https://github.com/user-attachments/assets/c3447974-f5f5-4586-993d-c4859aeef2d7)
+
+
     Visualizza tutte le erogazioni (automatiche e manuali)
 
     Filtri per campo:
 
+    ![Screenshot From 2025-06-30 18-37-38](https://github.com/user-attachments/assets/2e22cf78-3163-49ef-bea6-fbd2f269cdd6)
+
+
         totale litri, utente (tessera/nome), modalità, prodotto, dati veicolo (se presenti), lato di erogazione (1 o 2)
 
     Filtri temporali: da–a + combinazione con filtri di campo
+
+    ![Screenshot From 2025-06-30 18-40-20](https://github.com/user-attachments/assets/86f0c1fc-99c8-424f-95df-6df4b1312edf)
+
 
     Esportazione CSV: pagina corrente o tutti i record
 
@@ -92,6 +101,9 @@ Sezione Erogazioni
     Reset Dati: elimina tutta la cronologia erogazioni (no singoli)
 
 Sezione Autisti
+
+![Screenshot From 2025-06-30 18-40-46](https://github.com/user-attachments/assets/73921df1-d8bc-4a38-9ac8-49ce68d12f93)
+
 
     Associa tessera → dati: nome, cognome, azienda
 
@@ -104,6 +116,9 @@ Sezione Autisti
     Esportazione CSV + paginazione
 
 Sezione Veicoli
+
+![Screenshot From 2025-06-30 18-40-52](https://github.com/user-attachments/assets/7139036e-e18a-4ead-b63e-da84d44468af)
+
 
     Dati univoci: ID veicolo, azienda, km totali, targa
 
@@ -121,15 +136,24 @@ Sezione Parametri
 
     Parametri Fuel (per lato)
 
+    ![Screenshot From 2025-06-30 18-38-41](https://github.com/user-attachments/assets/dee53b1a-7a39-43bd-a878-20b67b19088c)
+
+
         GPIO pump, pulser, litri/pulse
 
         Timer di erogazione, prezzo al litro ecc.
 
     Parametri GUI (per lato)
 
+![Screenshot From 2025-06-30 18-39-19](https://github.com/user-attachments/assets/21160e9f-77a4-4308-8edd-b1a798bff20e)
+
+
         Colori, bordi, testi dei pulsanti e messaggi
 
     Parametri Principali
+
+![Screenshot From 2025-06-30 18-39-43](https://github.com/user-attachments/assets/0f7821a8-b9c1-4f14-8287-ba8969dd4ff1)
+
 
         Testi di avviso, timeout generali,
 
