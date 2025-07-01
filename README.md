@@ -60,7 +60,10 @@
 1. Dalla root del repo:
    ```bash
    chmod +x installer.sh
-   sudo ./installer.sh
+   ./installer.sh
+
+    (!!! È POSSIBILE CHE IN FASE INIZIALE DOPO L'INSTALLAZIONE DI DOCKER, L'INSTALLER TRMINI INASPETTATAMENTE,
+         È DEL TUTTO NORMALE, RIAVVIARE IL SISTEMA E RILANCIARE L'INSTALLER FINO A MESSAGGIO DI INSTALLAZIONE CORRETTA!!!).
 
     Abilita login automatico su tty1.
 
