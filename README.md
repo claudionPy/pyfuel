@@ -1,29 +1,180 @@
-# PYFUEL
-Pyfuel is a complete management system for your private fuel dispensing systems, such as fleet depots or even smaller organizations that need accurate and orderly management of dispensing and the data that derives from it.
-By complete management system we mean that:
-Pyfuel is a software for high-performance electronic boards such as Raspberry Pi, which allows you to manage the various mechanical equipment that concern the physical dispensing system, 
-such as the dispensing pump, the pulser for counting the liters, the dispensing nozzles, solenoid valves and more.
+# PYFUEL 🚀⛽
 
-The Pyfuel software includes intuitive graphics that also allow users who are less familiar with automatic and self-service systems to be able to refuel independently 
-with the use of a personal card that will be enabled and monitored by the owner. It is possible to insert the Pyfuel system in two different modes,
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)  
+[![Contributors](https://img.shields.io/github/contributors/your-username/pyfuel)](https://github.com/your-username/pyfuel/graphs/contributors)
 
-Self:
+**Pyfuel** è un sistema di gestione completo per impianti di erogazione carburante “private” (flotte aziendali, depositi, ecc.) basato su Raspberry Pi e hardware open.
 
-![Screenshot From 2025-06-30 18-34-36](https://github.com/user-attachments/assets/68fd671d-bc9b-4fb9-9d76-ecfff448fa69)
+---
 
-    in order to dispense, users must necessarily bring their personal card close to the RFID reader provided with the Rasp. Plus, and if the card has been previously registered, it will be possible 
-    to dispense by selecting the desired nozzle (with a simple click), it is possible to add additional checks in addition to the simple validation of the card, such as the verification of a vehicle 
-    and the total kilometers of a vehicle associated with the user who wants to dispense, or a PIN code.
-    
-Manual mode:
-    allows you to dispense freely without card checks or validations.
+## 📋 Sommario
 
-The two modes are mainly distinguished by the color of the buttons:
-Green button, Self mode.
-Gray button, manual mode.
+- [Caratteristiche](#-caratteristiche)  
+- [Architettura & Tecnologie](#-architettura--tecnologie)  
+- [Installer & Avvio](#-installer--avvio)  
+- [Dashboard Web](#-dashboard-web)  
+  - [Sezione Erogazioni](#sezione-erogazioni)  
+  - [Sezione Autisti](#sezione-autisti)  
+  - [Sezione Veicoli](#sezione-veicoli)  
+  - [Sezione Parametri](#sezione-parametri)  
+- [Screenshots](#-screenshots)  
+- [Contribuire](#-contribuire)  
+- [Licenza](#-licenza)  
 
-following a card validation and related checks, the button will turn Yellow, Waiting to be clicked, and a text in the center of the screen will indicate to the user the action to be performed with a message similar to "SELECT SIDE", 
-if this text is not present in the center of the screen, but rather the item "APPROVE CARD", then the Yellow side has already been selected by a user.
-It is my duty to remind you that this information is purely informative, as even without reading it, the Pyfuel system is intuitive and simple as already reiterated, 
-all the functions listed above have a timer (e.g. side selection) within which to perform a certain action, after which the system returns to the initial state of waiting for delivery, 
-in this way even if a user forgets or makes a mistake in an action, the system cancels the actions if it does not find any interaction.
+---
+
+## 🔥 Caratteristiche
+
+- **Dispersione simultanea**: supporto per doppia erogazione in parallelo  
+- **Modalità Self-Service**: card RFID + PIN + verifica veicolo/km  
+- **Modalità Manuale**: rapido, senza controlli  
+- **Timer di interazione**: selezione lato, approvazione card, erogazione  
+- **Dashboard Web** per visualizzare, filtrare ed esportare i dati  
+- **CRUD** completo su Autisti e Veicoli  
+- **Esportazione CSV** (pagina singola o totale)  
+- **Configurazione parametrica** (pre­set litri, GPIO, colori, testi…)  
+- **Archiviazione sicura** con PostgreSQL  
+
+---
+
+## 🏗 Architettura & Tecnologie
+
+| Componente         | Tecnologia                |
+|--------------------|---------------------------|
+| **GUI Touch**      | Python + CustomTkinter    |
+| **Backend HW**     | Python (asyncio + GPIO)   |
+| **API & Web**      | FastAPI + SQLAlchemy      |
+| **Asincronia**     | `asyncio` per parallelismi|
+| **DB**             | PostgreSQL                |
+| **Dashboard Web**  | Javascript + REST API     |
+
+1. **Raspberry Pi** → gestione GPIO (pompe, valvole, pulser).  
+2. **GUI CTK** → interfaccia locale CustomTKinter personalizzata.  
+3. **FastAPI** → server asincrono REST per web & servizi interni.  
+4. **SQLAlchemy** → mappatura ORM su database locale.  
+
+---
+
+## 🖥 Installer & Avvio
+
+1. Dalla root del repo:
+   ```bash
+   chmod +x installer.sh
+   sudo ./installer.sh
+
+    Abilita login automatico su tty1.
+
+    Riavvia il sistema:
+
+    sudo reboot
+
+Al boot, Pyfuel parte in Self (verde). Per cambiare modalità di avvio, usa la dashboard:
+
+    Parametri → Parametri Fuel → Modalità automatica (ON/OFF)
+
+🌐 Dashboard Web
+
+La Dashboard si compone di quattro sezioni principali:
+Sezione Erogazioni
+
+    Visualizza tutte le erogazioni (automatiche e manuali)
+
+    Filtri per campo:
+
+        totale litri, utente (tessera/nome), modalità, prodotto, dati veicolo (se presenti), lato di erogazione (1 o 2)
+
+    Filtri temporali: da–a + combinazione con filtri di campo
+
+    Esportazione CSV: pagina corrente o tutti i record
+
+    Paginazione: 10/25/50 elementi per pagina
+
+    Reset Dati: elimina tutta la cronologia erogazioni (no singoli)
+
+Sezione Autisti
+
+    Associa tessera → dati: nome, cognome, azienda
+
+    PIN (on/off)
+
+    Richiesta numero veicolo (on/off)
+
+    Gestione CRUD: Aggiungi / Modifica / Elimina
+
+    Esportazione CSV + paginazione
+
+Sezione Veicoli
+
+    Dati univoci: ID veicolo, azienda, km totali, targa
+
+    Richiesta inserimento km (on/off)
+
+    Associazione autista–veicolo per flessibilità esterni
+
+    Gestione CRUD: Aggiungi / Modifica / Elimina
+
+    Esportazione CSV + paginazione
+
+    Ogni erogazione riporta dati autista + veicolo per tracciabilità completa.
+
+Sezione Parametri
+
+    Parametri Fuel (per lato)
+
+        GPIO pump, pulser, litri/pulse
+
+        Timer di erogazione, prezzo al litro ecc.
+
+    Parametri GUI (per lato)
+
+        Colori, bordi, testi dei pulsanti e messaggi
+
+    Parametri Principali
+
+        Testi di avviso, timeout generali,
+
+    Gestione Lati
+
+        Abilita/disabilita lato 1 e lato 2
+
+        (Massimo 2 lati – indispensabili per erogare)
+
+Tutte le modifiche ai parametri vegono applicate al riavvio del sistema.
+📸 Screenshots
+<div align="center">
+Self Mode (verde)	Inserimento PIN	Seleziona lato (giallo)
+![Self Mode][img-self]	![PIN Entry][img-pin]	![Select Side][img-side]
+Manual Mode (arancione)	Errore card (rosso)
+![Manual Mode][img-manual]	![Card Error][img-error]
+</div>
+
+[img-self]: ![Screenshot From 2025-06-30 18-34-36](https://github.com/user-attachments/assets/c66c98f0-f161-4c02-bced-5003cddf0fd2)
+
+[img-pin]: ![Screenshot From 2025-06-30 18-34-57](https://github.com/user-attachments/assets/771e61f4-fa38-48f2-aee6-12a1b21d194e)
+
+[img-side]: ![Screenshot From 2025-06-30 18-35-44](https://github.com/user-attachments/assets/e672a8ab-0c69-4a58-a915-8c4c77087779)
+
+[img-manual]: 
+
+[img-error]: ![Screenshot From 2025-06-30 18-36-18](https://github.com/user-attachments/assets/247f1ccf-ac2a-4dd8-9a0f-bd7fd9e12f72)
+
+
+🤝 Contribuire
+
+    Fork del progetto
+
+    Crea un branch feature:
+
+    git checkout -b feat/my-feature
+
+    Commit & push delle modifiche
+
+    Apri una Pull Request
+
+    Rispetta il Codice di Condotta
+
+📄 Licenza
+
+Distribuito sotto licenza MIT. Vedi LICENSE per i dettagli.
+
+    Pyfuel: performance, sicurezza e semplicità per il tuo impianto carburante!
