@@ -141,20 +141,14 @@ Sezione Parametri
 
 Tutte le modifiche ai parametri vegono applicate al riavvio del sistema.
 📸 Screenshots
-<div align="center">
-Self Mode (verde)	Inserimento PIN	Seleziona lato (giallo)
-![Self Mode][img-self]	![PIN Entry][img-pin]	![Select Side][img-side]
-Manual Mode (arancione)	Errore card (rosso)
-![Manual Mode][img-manual]	![Card Error][img-error]
-</div>
 
-[img-self]: ![Screenshot From 2025-06-30 18-34-36](https://github.com/user-attachments/assets/c66c98f0-f161-4c02-bced-5003cddf0fd2)
+[Self mode]: ![Screenshot From 2025-06-30 18-34-36](https://github.com/user-attachments/assets/c66c98f0-f161-4c02-bced-5003cddf0fd2)
 
-[img-pin]: ![Screenshot From 2025-06-30 18-34-57](https://github.com/user-attachments/assets/771e61f4-fa38-48f2-aee6-12a1b21d194e)
+[Pin request]: ![Screenshot From 2025-06-30 18-34-57](https://github.com/user-attachments/assets/771e61f4-fa38-48f2-aee6-12a1b21d194e)
 
-[img-side]: ![Screenshot From 2025-06-30 18-35-44](https://github.com/user-attachments/assets/e672a8ab-0c69-4a58-a915-8c4c77087779)
+[Side selection]: ![Screenshot From 2025-06-30 18-35-44](https://github.com/user-attachments/assets/e672a8ab-0c69-4a58-a915-8c4c77087779)
 
-[img-busy]: ![Screenshot From 2025-06-30 18-36-18](https://github.com/user-attachments/assets/247f1ccf-ac2a-4dd8-9a0f-bd7fd9e12f72)
+[Side busy]: ![Screenshot From 2025-06-30 18-36-18](https://github.com/user-attachments/assets/247f1ccf-ac2a-4dd8-9a0f-bd7fd9e12f72)
 
 
 🤝 Contribuire
