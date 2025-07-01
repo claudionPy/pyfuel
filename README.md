@@ -5,9 +5,6 @@ Pyfuel is a software for high-performance electronic boards such as Raspberry Pi
 
 The Pyfuel software includes intuitive graphics that also allow users who are less familiar with automatic and self-service systems to be able to refuel independently with the use of a personal card that will be enabled and monitored by the owner. It is possible to insert the Pyfuel system in two different modes, 
 Self:
-
-    ![Screenshot From 2025-06-30 18-34-36](https://github.com/user-attachments/assets/11372c6c-b6fe-4059-917f-f7fed4d35b08)
-    
     in order to dispense, users must necessarily bring their personal card close to the RFID reader provided with the Rasp. Plus, and if the card has been previously registered, it will be possible to dispense by selecting the desired nozzle 
     (with a simple click), it is possible to add additional checks in addition to the simple validation of the card, such as the verification of a vehicle and the total kilometers of a vehicle associated with the user who wants to dispense,
     or a PIN code.
