@@ -23,7 +23,7 @@ from config.loader import ConfigManager
 from app.schemas.config import FullConfigSchema
 
 router = APIRouter()
-cfg_mgr = ConfigManager(config_path="src/config/config.json")
+cfg_mgr = ConfigManager(config_path="config/config.json")
 
 @router.post("/drivers/", response_model=drivers_schemas.Driver)
 async def createDriver(
